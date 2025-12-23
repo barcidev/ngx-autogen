@@ -1,28 +1,40 @@
-# Getting Started With Schematics
+# ngx-essentials-schematics
 
-This repository is a basic Schematic implementation that serves as a starting point to create and publish Schematics to NPM.
+**ngx-essentials-schematics** es un conjunto de schematics diseñados para optimizar y estandarizar el flujo de trabajo en proyectos Angular. Esta librería proporciona herramientas de generación de código que siguen las mejores prácticas, permitiendo a los desarrolladores ahorrar tiempo en tareas repetitivas y configuración de arquitectura.
 
-### Testing
+## 🚀 Características
 
-To test locally, install `@angular-devkit/schematics-cli` globally and use the `schematics` command line tool. That tool acts the same as the `generate` command of the Angular CLI, but also has a debug mode.
+El proyecto se lanza inicialmente con un enfoque en la gestión de estado, pero está diseñado para crecer:
 
-Check the documentation with
+- **Store Schematic**: Nuestro primer schematic disponible. Permite generar automáticamente toda la estructura necesaria para un store basado en signals (NGRX-Signals), facilitando la integración rápida y escalable de la gestión de estado en tus aplicaciones.
+
+## 📅 Próximamente
+
+**ngx-essentials-schematics** es un proyecto en evolución continua. Se irán agregando progresivamente nuevas herramientas y schematics para cubrir más aspectos del desarrollo en Angular, como:
+
+- Generación de servicios y utilidades.
+- Scaffolding para componentes avanzados.
+
+## 📦 Instalación
+
+Puedes instalar el paquete en tu proyecto Angular mediante angular cli:
 
 ```bash
-schematics --help
+ng add @jpalacio/ngx-essentials-schematics
 ```
 
-### Unit Testing
+## 🛠️ Uso
 
-`npm run test` will run the unit tests, using Jasmine as a runner and test framework.
+### Generar un Store
 
-### Publishing
-
-To publish, simply do:
+Para utilizar el schematic de store, ejecuta el siguiente comando en tu CLI de Angular:
 
 ```bash
-npm run build
-npm publish
+ng g app-store --name="nombreDelStore"
 ```
 
-That's it!
+Sigue las instrucciones en consola para configurar tu store según tus necesidades.
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia [MIT](LICENSE).

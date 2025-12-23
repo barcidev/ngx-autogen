@@ -1,5 +1,5 @@
 {
-  "name": "@jpalacio/ngx-essentials-schematics",
+  "name": "@jpalacio09/ngx-essentials-schematics",
   "version": "0.1.0",
   "description": "A collection of Angular schematics for essential functionalities.",
   "main": "dist/index.js",
@@ -13,14 +13,39 @@
     "src/**/*.template",
     "src/**/*.d.ts",
     "src/**/schema.json",
-    "src/collection.json"
+    "src/collection.json",
+    "README.md",
+    "LICENSE"
   ],
   "keywords": [
-    "schematics"
+    "angular",
+    "schematics",
+    "state-management",
+    "ngrx",
+    "signals",
+    "scaffolding"
   ],
-  "author": "",
+  "author": "Jorge Palacio Barcinilla",
   "license": "MIT",
   "schematics": "./src/collection.json",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jpalacio09/ngx-essentials-schematics.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/jpalacio09/ngx-essentials-schematics#readme",
+  "bugs": {
+    "url": "https://github.com/jpalacio09/ngx-essentials-schematics/issues"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/jpalacio09"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "dependencies": {
     "@angular-devkit/core": "^20.3.13",
     "@angular-devkit/schematics": "^20.3.13",
