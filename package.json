@@ -1,5 +1,5 @@
 {
-  "name": "@jpdev/ngx-autogen",
+  "name": "@barcidev/ngx-autogen",
   "version": "0.1.0",
   "description": "A collection of Angular schematics for essential functionalities.",
   "main": "dist/index.js",
