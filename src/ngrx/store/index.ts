@@ -40,7 +40,7 @@ const pluralizeEn = (name: string): string => {
 function mergeFilesSmart(
   urlPath: string,
   destPath: string,
-  options: any
+  options: any,
 ): Rule {
   return mergeWith(
     apply(url(urlPath), [
@@ -64,7 +64,7 @@ function mergeFilesSmart(
         }
         return fileEntry;
       }),
-    ])
+    ]),
   );
 }
 
@@ -78,6 +78,10 @@ export function signalStore(options: StoreSchemaOptions): Rule {
     ];
     if (globalConfig && globalConfig.pk && !options.pk) {
       options.pk = globalConfig.pk;
+    }
+
+    if (!options.path) {
+      options.path = process.cwd();
     }
 
     treeRef = tree;
@@ -140,7 +144,7 @@ export function signalStore(options: StoreSchemaOptions): Rule {
     const commonEntityRule = mergeFilesSmart(
       "./files/entity",
       join(movePath, "common/entity"),
-      options
+      options,
     );
 
     return chain([mergeWith(templateStoreSource), commonEntityRule]);
