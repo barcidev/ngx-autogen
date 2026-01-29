@@ -12,8 +12,12 @@
     },
     "path": {
       "type": "string",
-      "description": "Destination path.",
-      "default": "src/app/core"
+      "description": "Destination path."
+    },
+    "grouped": {
+      "type": "boolean",
+      "description": "Whether the files should be grouped in subfolders.",
+      "default": false
     },
     "lang": {
       "type": "string",

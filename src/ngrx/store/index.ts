@@ -84,8 +84,14 @@ export function signalStore(options: StoreSchemaOptions): Rule {
       options.path = process.cwd();
     }
 
+    // Si la carpeta final no se llama 'state', agregarla
+    let movePath = normalize(options.path);
+    const pathParts = movePath.split(/[\\/]/).filter(Boolean);
+    if (pathParts[pathParts.length - 1] !== "state") {
+      movePath = join(movePath, "state");
+    }
+
     treeRef = tree;
-    const movePath = normalize(options.path);
 
     const indexPath = join(movePath, "index.ts");
     const nameDash = strings.dasherize(options.name);
@@ -94,8 +100,8 @@ export function signalStore(options: StoreSchemaOptions): Rule {
     const entityHeader = `/* ${entityName.toUpperCase()} */`;
     const exportBlock = [
       entityHeader,
-      `export * from './${nameDash}/${nameDash}.model';`,
-      `export * from './${nameDash}/${nameDash}.service';`,
+      `export * from './${nameDash}${options.grouped ? "/models" : ""}/${nameDash}.model';`,
+      `export * from './${nameDash}${options.grouped ? "/services" : ""}/${nameDash}.service';`,
       `export * from './${nameDash}/${nameDash}.store';`,
       "",
     ].join("\n");
@@ -124,29 +130,81 @@ export function signalStore(options: StoreSchemaOptions): Rule {
       tree.create(indexPath, content);
     }
 
-    const templateStoreSource = apply(url("./files/store"), [
-      applyTemplates({
-        ...strings,
-        ...options,
-        pluralize: (word: string) => {
-          switch (options.lang) {
-            case "es":
-              return pluralizeEs(word);
-            default:
-              return pluralizeEn(word);
-          }
-        },
-        pk: options.pk || "id",
-      }),
-      move(join(movePath, strings.dasherize(options.name))),
-    ]);
+    // Generar archivos en las carpetas store, services y models
+    const namePath = join(movePath, strings.dasherize(options.name));
+    const rules = [];
 
-    const commonEntityRule = mergeFilesSmart(
-      "./files/entity",
-      join(movePath, "common/entity"),
-      options,
+    // store
+    rules.push(
+      mergeWith(
+        apply(url("./files/state/store"), [
+          applyTemplates({
+            ...strings,
+            ...options,
+            pluralize: (word: string) => {
+              switch (options.lang) {
+                case "es":
+                  return pluralizeEs(word);
+                default:
+                  return pluralizeEn(word);
+              }
+            },
+            pk: options.pk || "id",
+          }),
+          move("store"),
+        ]),
+      ),
     );
 
-    return chain([mergeWith(templateStoreSource), commonEntityRule]);
+    // services
+    rules.push(
+      mergeWith(
+        apply(url("./files/state/services"), [
+          applyTemplates({
+            ...strings,
+            ...options,
+            pluralize: (word: string) => {
+              switch (options.lang) {
+                case "es":
+                  return pluralizeEs(word);
+                default:
+                  return pluralizeEn(word);
+              }
+            },
+            pk: options.pk || "id",
+          }),
+          move(join(namePath, options.grouped ? "services" : "")),
+        ]),
+      ),
+    );
+
+    // models
+    rules.push(
+      mergeWith(
+        apply(url("./files/state/models"), [
+          applyTemplates({
+            ...strings,
+            ...options,
+            pluralize: (word: string) => {
+              switch (options.lang) {
+                case "es":
+                  return pluralizeEs(word);
+                default:
+                  return pluralizeEn(word);
+              }
+            },
+            pk: options.pk || "id",
+          }),
+          move(join(namePath, options.grouped ? "models" : "")),
+        ]),
+      ),
+    );
+
+    // common entity
+    rules.push(
+      mergeFilesSmart("./files/entity", "src/app/shared/state", options),
+    );
+
+    return chain(rules);
   };
 }

@@ -1,0 +1,92 @@
+import { computed, Signal } from '@angular/core';
+import { EmptyFeatureResult, SignalStoreFeature, signalStoreFeature, withComputed, withState } from '@ngrx/signals';
+
+export interface EntityStatus {
+  _removeLoading: boolean;
+  _updateLoading: boolean;
+  addError: Error | null;
+  addLoading: boolean;
+  error: Error | null;
+  idSelected: null | number | string;
+  idsRemoving: (number | string)[];
+  idsUpdating: (number | string)[];
+  loaded: boolean;
+  loading: boolean;
+  removeError: Error | null;
+  selectedError: Error | null;
+  selectedLoading: boolean;
+  updateError: Error | null;
+}
+
+interface EntityStatusComputedProps {
+  anyError: Error | null;
+  isAnyActionLoading: boolean;
+  removeLoading: boolean;
+  updateLoading: boolean;
+}
+
+type EntityStatusMethodProps = Record<string, (...args: unknown[]) => unknown>;
+
+const initialState: EntityStatus = {
+  _removeLoading: false,
+  _updateLoading: false,
+  addError: null,
+  addLoading: false,
+  error: null,
+  idSelected: null,
+  idsRemoving: [],
+  idsUpdating: [],
+  loaded: false,
+  loading: false,
+  removeError: null,
+  selectedError: null,
+  selectedLoading: false,
+  updateError: null
+};
+
+/**
+ * Resetea el estado de la entidad al estado inicial.
+ * @returns {EntityStatus} - El estado inicial de la entidad.
+ */
+export function resetEntityStatus(): EntityStatus {
+  return initialState;
+}
+
+/**
+ * Agrega funcionalidades comunes de estado y computados para manejar el estado de entidades.
+ * @returns {SignalStoreFeature} -Características de la tienda con estado y computados para el manejo de entidades.
+ */
+export function withEntityStatus(): SignalStoreFeature<
+  EmptyFeatureResult,
+  {
+    methods: EntityStatusMethodProps;
+    props: Record<'statusComputed', Signal<EntityStatusComputedProps>>;
+    state: Record<'status', EntityStatus>;
+  }
+> {
+  return signalStoreFeature(
+    withState({ status: initialState }),
+    withComputed(
+      ({
+        status: {
+          _removeLoading,
+          _updateLoading,
+          addError,
+          error,
+          idsRemoving,
+          idsUpdating,
+          removeError,
+          selectedError,
+          updateError
+        }
+      }) => ({
+        statusComputed: computed(() => ({
+          anyError: error() || addError() || removeError() || updateError() || selectedError(),
+          isAnyActionLoading: idsUpdating().length > 0 || idsRemoving().length > 0,
+          removeLoading: _removeLoading() || idsRemoving().length > 0,
+          updateLoading: _updateLoading() || idsUpdating().length > 0
+        }))
+      })
+    )
+  );
+}

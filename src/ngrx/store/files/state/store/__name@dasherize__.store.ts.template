@@ -1,0 +1,200 @@
+import { computed, inject } from '@angular/core';
+import { patchState, signalStore, type, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
+import {
+  addEntity,
+  entityConfig,
+  removeEntity,
+  setAllEntities,
+  updateEntity,
+  withEntities
+} from '@ngrx/signals/entities';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { catchError, of, pipe, switchMap, tap } from 'rxjs';
+
+import { RequestConfig } from 'src/app/shared/state/entity.model';
+import { withPagination } from 'src/app/shared/state/with-entity-pagination';
+import { withEntityStatus } from 'src/app/shared/state/with-entity-status';
+iimport {
+  Add<%= classify(name) %>,
+  <%= classify(name) %>Dto,
+  Update<%= classify(name) %>
+} from '<%= grouped ? "./models/<%= dasherize(name) %>.model" : "./<%= dasherize(name) %>.model"';
+import { <%= classify(name) %>Service } from '<%= grouped ? "./services/./<%= dasherize(name) %>.service" : "./<%= dasherize(name) %>.service"';
+
+const config = entityConfig({
+  entity: type<<%= classify(name) %>Dto>(),
+  selectId: (entity) => entity.<%= pk %>,
+});
+
+export const <%= classify(name) %>Store = signalStore(
+  withEntities(config),
+  withEntityStatus(),
+  withPagination(),
+  withComputed(({ entities, entityMap, status: { idSelected } }) => ({
+    <%= camelize(pluralize(name)) %>: computed(() => entities()),
+    <%= camelize(name) %>Seleccionado: computed(() => {
+      const <%= pk %> = idSelected();
+      return <%= pk %> ? entityMap()[<%= pk %>] : null;
+    })
+  })),
+  withMethods((store, <%= camelize(name) %>Service = inject(<%= classify(name) %>Service)) => ({
+    add<%= classify(name) %>: rxMethod<RequestConfig<Add<%= classify(name) %>, <%= classify(name) %>Dto>>(
+      pipe(
+        tap(() => {
+          patchState(store, (state) => ({ status: { ...state.status, addLoading: true } }));
+        }),
+        switchMap(({ onError, onSuccess, payload: { request } }) => {
+          return <%= camelize(name) %>Service.add<%= classify(name) %>$(request).pipe(
+            tap((<%= pk %>) => {
+              const new<%= classify(name) %>: <%= classify(name) %>Dto = { ...request, <%= pk %>};
+              patchState(store, addEntity(new<%= classify(name) %>, config), (state) => ({
+                    ...state,
+                    status: { ...state.status, addError: null, addLoading: false }
+                  }));
+              if (onSuccess) {
+                onSuccess(newHorario);
+              }
+            }),
+            catchError(() => {
+              const error = new Error('');
+              patchState(store, (state) => ({
+                status: { ...state.status, addError: error, addLoading: false }
+              }));
+              if (onError) {
+                onError();
+              }
+              return EMPTY;
+            })
+          );
+        })
+      )
+    ),
+    load<%= classify(pluralize(name)) %>: rxMethod<void>(
+      pipe(
+        tap(() => {
+          patchState(store, (state) => ({ status: { ...state.status, loading: true } }));
+        }),
+        switchMap(() => {
+          return <%= camelize(name) %>Service.get<%= classify(pluralize(name)) %>$().pipe(
+            tap((response) => {
+              patchState(store, setAllEntities(response, config), (state) => ({
+                status: { ...state.status, error: null, loaded: true, loading: false }
+              }));
+            }),
+            catchError(() => {
+              patchState(store, (state) => ({
+                status: { ...state.status, error: new Error('Error al cargar horario-accesos'), loading: false }
+              }));
+              return EMPTY;
+            })
+          );
+        })
+      )
+    ),
+    remove<%= classify(name) %>: rxMethod<RequestConfig<number, boolean>>(
+      pipe(
+        tap(({ payload }) => {
+          patchState(store, (state) => ({
+            status: {
+              ...state.status,
+              _removeLoading: true,
+              idsRemoving: [...(state.status.idsRemoving || []), payload]
+            }
+          }));
+        }),
+        switchMap(({ onError, onSuccess, payload }) => {
+          return <%= camelize(name) %>Service.remove<%= classify(name) %>$(payload).pipe(
+            tap((response) => {
+              if (response) {
+                const idsRemoving = store.status.idsRemoving() || [];
+                patchState(store, removeEntity(payload), (state) => ({
+                  status: {
+                    ...state.status,
+                    _removeLoading: false,
+                    error: null,
+                    idsRemoving: idsRemoving.filter((idRemoving) => idRemoving !== payload)
+                  }
+                }));
+                if (onSuccess) {
+                  onSuccess(response);
+                }
+              } else {
+                throw new Error();
+              }
+            }),
+            catchError(() => {
+              const idsRemoving = store.status.idsRemoving() || [];
+              patchState(store, (state) => ({
+                status: {
+                  ...state.status,
+                  _removeLoading: false,
+                  error: new Error(),
+                  idsRemoving: idsRemoving.filter((idRemoving) => idRemoving !== payload)
+                }
+              }));
+              if (onError) {
+                onError();
+              }
+              return EMPTY;
+            })
+          );
+        })
+      )
+    ),
+    update<%= classify(name) %>: rxMethod<RequestConfig<Update<%= classify(name) %>, boolean>>(
+      pipe(
+        tap(({ payload }) => {
+          patchState(store, (state) => ({
+            status: {
+              ...state.status,
+              _updateLoading: true,
+              idsUpdating: [...(state.status.idsUpdating || []), payload.cod]
+            }
+          }));
+        }),
+        switchMap(({ onError, onSuccess, payload }) => {
+          return <%= camelize(name) %>Service.update<%= classify(name) %>$(entity).pipe(
+            tap((response) => {
+              if (response) {
+                const idsUpdating = store.status.idsUpdating() || [];
+                patchState(store, updateEntity({ changes: payload, id: payload.cod }, config), (state) => ({
+                  status: {
+                    ...state.status,
+                    _updateLoading: false,
+                    error: null,
+                    idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.cod)
+                  }
+                }));
+                if (onSuccess) {
+                  onSuccess(response);
+                }
+              } else {
+                throw new Error('');
+              }
+            }),
+            catchError(() => {
+              const idsUpdating = store.status.idsUpdating() || [];
+              patchState(store, (state) => ({
+                status: {
+                  ...state.status,
+                  _updateLoading: false,
+                  error: new Error('Error al actualizar horario-acceso'),
+                  idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.cod)
+                }
+              }));
+              if (onError) {
+                onError();
+              }
+              return EMPTY;
+            })
+          );
+        })
+      )
+    ),
+  })),
+  withHooks({
+    onInit: (store) => {
+      store.load<%= classify(pluralize(name)) %>();
+    },
+  })
+);
