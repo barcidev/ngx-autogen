@@ -9,17 +9,17 @@ import {
   withEntities
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, of, pipe, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, pipe, switchMap, tap } from 'rxjs';
 
-import { RequestConfig } from 'src/app/shared/state/entity.model';
-import { withPagination } from 'src/app/shared/state/with-entity-pagination';
-import { withEntityStatus } from 'src/app/shared/state/with-entity-status';
-iimport {
+import { RequestConfig } from '@shared-state/entity.model';
+import { withPagination } from '@shared-state/with-entity-pagination';
+import { withEntityStatus } from '@shared-state/with-entity-status';
+import {
   Add<%= classify(name) %>,
   <%= classify(name) %>Dto,
   Update<%= classify(name) %>
-} from '<%= grouped ? "./models/<%= dasherize(name) %>.model" : "./<%= dasherize(name) %>.model"';
-import { <%= classify(name) %>Service } from '<%= grouped ? "./services/./<%= dasherize(name) %>.service" : "./<%= dasherize(name) %>.service"';
+} from '<%= grouped ? "./models/" + dasherize(name) + ".model" : "./" + dasherize(name) + ".model" %>';
+import { <%= classify(name) %>Service } from '<%= grouped ? "./services/" + dasherize(name) + ".service" : "./" + dasherize(name) + ".service" %>';;
 
 const config = entityConfig({
   entity: type<<%= classify(name) %>Dto>(),
@@ -43,16 +43,16 @@ export const <%= classify(name) %>Store = signalStore(
         tap(() => {
           patchState(store, (state) => ({ status: { ...state.status, addLoading: true } }));
         }),
-        switchMap(({ onError, onSuccess, payload: { request } }) => {
-          return <%= camelize(name) %>Service.add<%= classify(name) %>$(request).pipe(
+        switchMap(({ onError, onSuccess, payload }) => {
+          return <%= camelize(name) %>Service.add<%= classify(name) %>$(payload).pipe(
             tap((<%= pk %>) => {
-              const new<%= classify(name) %>: <%= classify(name) %>Dto = { ...request, <%= pk %>};
+              const new<%= classify(name) %>: <%= classify(name) %>Dto = { ...payload, <%= pk %>};
               patchState(store, addEntity(new<%= classify(name) %>, config), (state) => ({
                     ...state,
                     status: { ...state.status, addError: null, addLoading: false }
                   }));
               if (onSuccess) {
-                onSuccess(newHorario);
+                onSuccess(new<%= classify(name) %>);
               }
             }),
             catchError(() => {
@@ -148,21 +148,21 @@ export const <%= classify(name) %>Store = signalStore(
             status: {
               ...state.status,
               _updateLoading: true,
-              idsUpdating: [...(state.status.idsUpdating || []), payload.cod]
+              idsUpdating: [...(state.status.idsUpdating || []), payload.<%= pk %>]
             }
           }));
         }),
         switchMap(({ onError, onSuccess, payload }) => {
-          return <%= camelize(name) %>Service.update<%= classify(name) %>$(entity).pipe(
+          return <%= camelize(name) %>Service.update<%= classify(name) %>$(payload).pipe(
             tap((response) => {
               if (response) {
                 const idsUpdating = store.status.idsUpdating() || [];
-                patchState(store, updateEntity({ changes: payload, id: payload.cod }, config), (state) => ({
+                patchState(store, updateEntity({ changes: payload, id: payload.<%= pk %> }, config), (state) => ({
                   status: {
                     ...state.status,
                     _updateLoading: false,
                     error: null,
-                    idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.cod)
+                    idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.<%= pk %>)
                   }
                 }));
                 if (onSuccess) {
@@ -179,7 +179,7 @@ export const <%= classify(name) %>Store = signalStore(
                   ...state.status,
                   _updateLoading: false,
                   error: new Error('Error al actualizar horario-acceso'),
-                  idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.cod)
+                  idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.<%= pk %>)
                 }
               }));
               if (onError) {

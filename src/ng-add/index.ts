@@ -14,53 +14,47 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
 
     if (!buffer) {
       throw new SchematicsException(
-        "Could not find package.json. Make sure you are in the root of an Angular project."
+        "Could not find package.json. Make sure you are in the root of an Angular project.",
       );
     }
 
     const packageJson = JSON.parse(buffer.toString());
 
-    // 1. Obtener la versión de Angular Core
     const angularCoreVer =
       packageJson.dependencies["@angular/core"] ||
       packageJson.devDependencies["@angular/core"];
 
     if (!angularCoreVer) {
       throw new SchematicsException(
-        "The version of @angular/core could not be determined. Please ensure that Angular is installed in your project."
+        "The version of @angular/core could not be determined. Please ensure that Angular is installed in your project.",
       );
     }
 
     const mainVersion = parseInt(
       angularCoreVer.replace(/[^\d.]/g, "").split(".")[0],
-      10
+      10,
     );
 
-    // 2. Validación: NgRx Signals requiere Angular 16+ (v17+ recomendado)
-    if (mainVersion < 16) {
+    if (mainVersion < 20) {
       _context.logger.error(
-        `❌ Error: ngx-essentials requires Angular v16 or higher. Detected: v${mainVersion}`
+        `❌ Error: ngx-essentials requires Angular v20 or higher. Detected: v${mainVersion}`,
       );
       return tree; // Stop execution
     }
 
-    // 3. Mapear versión de NgRx (NgRx suele ir a la par con Angular)
     const ngrxVersion = `^${mainVersion}.0.0`;
 
     _context.logger.info(
-      `📦 Configuring dependencies for Angular v${mainVersion}...`
+      `📦 Configuring dependencies for Angular v${mainVersion}...`,
     );
 
-    // 4. Modificar package.json
     const packageName = "ngx-autogen";
 
-    // Inyectar dependencias compatibles
     packageJson.dependencies = {
       ...packageJson.dependencies,
       "@ngrx/signals": ngrxVersion,
     };
 
-    // Mover a devDependencies si es necesario
     if (packageJson.dependencies[packageName]) {
       const currentVer = packageJson.dependencies[packageName];
       delete packageJson.dependencies[packageName];
@@ -76,10 +70,10 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
 
     tree.overwrite(packagePath, JSON.stringify(packageJson, null, 2));
 
-    // 5. Configurar angular.json (Collections y Primary Key)
     updateAngularJson(tree, options);
 
-    // 6. Tarea de instalación
+    updateTsConfig(tree);
+
     _context.addTask(new NodePackageInstallTask());
 
     return tree;
@@ -115,4 +109,49 @@ function updateAngularJson(tree: Tree, options: NgAddSchemaOptions) {
   };
 
   tree.overwrite(path, JSON.stringify(workspace, null, 2));
+}
+
+/**
+ * Configura los Paths en el tsconfig.json para permitir el uso de @shared/*
+ */
+function updateTsConfig(tree: Tree) {
+  const tsConfigPath = "/tsconfig.json";
+  const path = tree.exists(tsConfigPath) ? tsConfigPath : "/tsconfig.app.json";
+
+  const buffer = tree.read(path);
+  if (!buffer) return;
+
+  let contentText = buffer.toString();
+
+  // Limpieza manual de comentarios para evitar que JSON.parse falle
+  const cleanJson = contentText.replace(
+    /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm,
+    "$1",
+  );
+
+  let tsconfig: any;
+  try {
+    tsconfig = JSON.parse(cleanJson);
+  } catch (e) {
+    // Si falla, intentamos parsearlo tal cual por si no tiene comentarios
+    try {
+      tsconfig = JSON.parse(contentText);
+    } catch (innerError) {
+      throw new SchematicsException(
+        `No se pudo parsear ${path}. Asegúrate de que es un JSON válido.`,
+      );
+    }
+  }
+
+  // Configurar los paths
+  tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+  tsconfig.compilerOptions.paths = tsconfig.compilerOptions.paths || {};
+
+  const sharedAlias = "@shared-state/*";
+  const sharedPath = ["src/app/shared/state/*"];
+
+  if (!tsconfig.compilerOptions.paths[sharedAlias]) {
+    tsconfig.compilerOptions.paths[sharedAlias] = sharedPath;
+    tree.overwrite(path, JSON.stringify(tsconfig, null, 2));
+  }
 }

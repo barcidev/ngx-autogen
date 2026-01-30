@@ -4,7 +4,7 @@ import {
   Add<%= classify(name) %>,
   <%= classify(name) %>Dto,
   Update<%= classify(name) %>
-} from '<%= grouped ? "../models/<%= dasherize(name) %>.model" : "./<%= dasherize(name) %>.model"';
+} from '<%= grouped ? "../models/" + dasherize(name) + ".model" : "./" + dasherize(name) + ".model" %>';
 
 @Injectable({
   providedIn: 'root'

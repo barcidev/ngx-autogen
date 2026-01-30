@@ -37,7 +37,7 @@ const pluralizeEn = (name: string): string => {
   return name + "s";
 };
 
-function mergeFilesSmart(
+/* function mergeFilesSmart(
   urlPath: string,
   destPath: string,
   options: any,
@@ -66,9 +66,32 @@ function mergeFilesSmart(
       }),
     ]),
   );
+} */
+
+function mergeFilesSmart(
+  urlPath: string,
+  destPath: string,
+  options: any,
+  tree: Tree,
+): Rule {
+  return mergeWith(
+    apply(url(urlPath), [
+      applyTemplates({ ...strings, ...options }),
+      move(destPath),
+      forEach((fileEntry) => {
+        if (tree.exists(fileEntry.path)) {
+          const existingContent = tree.read(fileEntry.path)!.toString();
+          if (existingContent.includes(fileEntry.content.toString().trim())) {
+            return null;
+          }
+        }
+        return fileEntry;
+      }),
+    ]),
+  );
 }
 
-let treeRef: Tree;
+//let treeRef: Tree;
 
 export function signalStore(options: StoreSchemaOptions): Rule {
   return async (tree: Tree) => {
@@ -81,17 +104,23 @@ export function signalStore(options: StoreSchemaOptions): Rule {
     }
 
     if (!options.path) {
-      options.path = process.cwd();
+      const projectName =
+        (workspace.extensions.defaultProject as string) ||
+        Array.from(workspace.projects.keys())[0];
+      const project = workspace.projects.get(projectName);
+
+      // 'src/app' es un estándar seguro si no se especifica otra cosa
+      const projectRoot = project ? project.sourceRoot || "src" : "src";
+      options.path = join(normalize(projectRoot), "app");
     }
 
-    // Si la carpeta final no se llama 'state', agregarla
+    // Ahora movePath será algo como 'src/app/state' en lugar de una ruta de disco C:/...
     let movePath = normalize(options.path);
-    const pathParts = movePath.split(/[\\/]/).filter(Boolean);
-    if (pathParts[pathParts.length - 1] !== "state") {
+    if (!movePath.endsWith("state")) {
       movePath = join(movePath, "state");
     }
 
-    treeRef = tree;
+    //treeRef = tree;
 
     const indexPath = join(movePath, "index.ts");
     const nameDash = strings.dasherize(options.name);
@@ -151,7 +180,7 @@ export function signalStore(options: StoreSchemaOptions): Rule {
             },
             pk: options.pk || "id",
           }),
-          move("store"),
+          move(namePath),
         ]),
       ),
     );
@@ -202,7 +231,7 @@ export function signalStore(options: StoreSchemaOptions): Rule {
 
     // common entity
     rules.push(
-      mergeFilesSmart("./files/entity", "src/app/shared/state", options),
+      mergeFilesSmart("./files/entity", "src/app/shared/state", options, tree),
     );
 
     return chain(rules);

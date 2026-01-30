@@ -1,4 +1,4 @@
-import { FormGroupType } from 'src/app/shared/state/entity.model';
+import { FormGroupType } from '@shared-state/entity.model';
 
 export interface Add<%= classify(name) %> {
 }

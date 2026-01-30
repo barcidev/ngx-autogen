@@ -53,6 +53,7 @@
     "typescript": "~5.9.2"
   },
   "devDependencies": {
+    "@angular-devkit/schematics-cli": "^21.1.2",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
     "copyfiles": "^2.4.1",
