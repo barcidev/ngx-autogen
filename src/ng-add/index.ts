@@ -106,6 +106,7 @@ function updateAngularJson(tree: Tree, options: NgAddSchemaOptions) {
   if (!workspace.schematics) workspace.schematics = {};
   workspace.schematics["ngx-autogen:all"] = {
     pk: options.pk,
+    lang: options.lang,
   };
 
   tree.overwrite(path, JSON.stringify(workspace, null, 2));

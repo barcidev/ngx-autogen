@@ -37,37 +37,6 @@ const pluralizeEn = (name: string): string => {
   return name + "s";
 };
 
-/* function mergeFilesSmart(
-  urlPath: string,
-  destPath: string,
-  options: any,
-): Rule {
-  return mergeWith(
-    apply(url(urlPath), [
-      applyTemplates({ ...strings, ...options }),
-      move(destPath),
-      forEach((fileEntry) => {
-        // Si el archivo ya existe en el árbol
-        if (treeRef.exists(fileEntry.path)) {
-          const existingContent = treeRef.read(fileEntry.path)!.toString();
-          const newContent = fileEntry.content.toString();
-
-          // Solo escribimos si el contenido nuevo no está ya incluido (basado en una cadena clave o firma)
-          // Puedes ajustar esta condición según lo que necesites verificar
-          if (existingContent.includes(newContent.trim())) {
-            return null; // Descarta el archivo del proceso de merge (no hace nada)
-          }
-
-          // Si el archivo existe pero queremos añadir contenido al final (opcional)
-          // treeRef.overwrite(fileEntry.path, existingContent + '\n' + newContent);
-          return null;
-        }
-        return fileEntry;
-      }),
-    ]),
-  );
-} */
-
 function mergeFilesSmart(
   urlPath: string,
   destPath: string,
@@ -91,8 +60,6 @@ function mergeFilesSmart(
   );
 }
 
-//let treeRef: Tree;
-
 export function signalStore(options: StoreSchemaOptions): Rule {
   return async (tree: Tree) => {
     const workspace = await getWorkspace(tree);
@@ -103,24 +70,29 @@ export function signalStore(options: StoreSchemaOptions): Rule {
       options.pk = globalConfig.pk;
     }
 
-    if (!options.path) {
-      const projectName =
-        (workspace.extensions.defaultProject as string) ||
-        Array.from(workspace.projects.keys())[0];
-      const project = workspace.projects.get(projectName);
+    // En tu función signalStore
+    // 1. Obtener la ruta absoluta del sistema donde se ejecuta el comando
+    const fullPath = process.cwd();
 
-      // 'src/app' es un estándar seguro si no se especifica otra cosa
-      const projectRoot = project ? project.sourceRoot || "src" : "src";
-      options.path = join(normalize(projectRoot), "app");
+    // 2. Buscar la posición de 'src' para limpiar la ruta
+    const srcIndex = fullPath.lastIndexOf("src");
+
+    let relativePath = "";
+    if (srcIndex !== -1) {
+      // Extraemos de 'src' en adelante (ej: src/app/features/billing)
+      relativePath = fullPath.substring(srcIndex);
+    } else {
+      // Si no encuentra 'src' (estás en la raíz), usamos el path por defecto
+      relativePath = join(normalize("src"), "app");
     }
 
-    // Ahora movePath será algo como 'src/app/state' en lugar de una ruta de disco C:/...
-    let movePath = normalize(options.path);
+    // 3. Normalizar y asegurar que termine en 'state'
+    let movePath = normalize(relativePath);
     if (!movePath.endsWith("state")) {
       movePath = join(movePath, "state");
     }
 
-    //treeRef = tree;
+    options.path = movePath;
 
     const indexPath = join(movePath, "index.ts");
     const nameDash = strings.dasherize(options.name);
