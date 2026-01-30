@@ -98,13 +98,13 @@ function updateAngularJson(tree: Tree, options: NgAddSchemaOptions) {
 
   if (!workspace.cli) workspace.cli = {};
   const collections = workspace.cli.schematicCollections || [];
-  if (!collections.includes("ngx-autogen")) {
-    collections.push("ngx-autogen");
+  if (!collections.includes("@barcidev/ngx-autogen")) {
+    collections.push("@barcidev/ngx-autogen");
     workspace.cli.schematicCollections = collections;
   }
 
   if (!workspace.schematics) workspace.schematics = {};
-  workspace.schematics["ngx-autogen:all"] = {
+  workspace.schematics["@barcidev/ngx-autogen:all"] = {
     pk: options.pk,
     lang: options.lang,
   };
