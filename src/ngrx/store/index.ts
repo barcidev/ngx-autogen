@@ -64,7 +64,7 @@ export function signalStore(options: StoreSchemaOptions): Rule {
   return async (tree: Tree) => {
     const workspace = await getWorkspace(tree);
     const globalConfig = (workspace.extensions as any).schematics?.[
-      "ngx-autogen:all"
+      "@barcidev/ngx-autogen:all"
     ];
     if (globalConfig && globalConfig.pk && !options.pk) {
       options.pk = globalConfig.pk;

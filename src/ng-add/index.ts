@@ -37,7 +37,7 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
 
     if (mainVersion < 20) {
       _context.logger.error(
-        `❌ Error: ngx-essentials requires Angular v20 or higher. Detected: v${mainVersion}`,
+        `❌ Error: @barcidev/ngx-autogen requires Angular v20 or higher. Detected: v${mainVersion}`,
       );
       return tree; // Stop execution
     }
@@ -48,7 +48,7 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
       `📦 Configuring dependencies for Angular v${mainVersion}...`,
     );
 
-    const packageName = "ngx-autogen";
+    const packageName = "@barcidev/ngx-autogen";
 
     packageJson.dependencies = {
       ...packageJson.dependencies,

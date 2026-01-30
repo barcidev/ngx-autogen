@@ -11,7 +11,7 @@ import {
 })
 export class <%= classify(name) %>Service {
 
-  add<%= classify(name) %>$(entity: Add<%= classify(name) %>): Observable<number> {
+  add<%= classify(name) %>$(payload: Add<%= classify(name) %>): Observable<number> {
     return of(0);
   }
 
@@ -23,7 +23,7 @@ export class <%= classify(name) %>Service {
     return of([]);
   }
 
-  update<%= classify(name) %>$(entity: Update<%= classify(name) %>): Observable<boolean> {
+  update<%= classify(name) %>$(payload: Update<%= classify(name) %>): Observable<boolean> {
     return of(true);
   }
 }
