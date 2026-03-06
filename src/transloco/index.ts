@@ -19,7 +19,7 @@ import { join, normalize } from "path";
 // Utilidades locales
 import { addMetadataToStandaloneComponent } from "../common/file-actions";
 import { pluralizeEn, pluralizeEs } from "../common/pluralize";
-import { TranslocoSchemaOptions } from "./scheme";
+import { TranslocoSchemaOptions } from "./schema";
 
 export function transloco(options: TranslocoSchemaOptions): Rule {
   return async (tree: Tree) => {
