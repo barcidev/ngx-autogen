@@ -16,8 +16,7 @@
     "lang": {
       "type": "string",
       "description": "Language for pluralization ('en' for English, 'es' for Spanish).",
-      "enum": ["en", "es"],
-      "default": "en"
+      "enum": ["en", "es"]
     }
   }
 }
