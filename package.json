@@ -1,6 +1,6 @@
 {
   "name": "@barcidev/ngx-autogen",
-  "version": "0.1.36",
+  "version": "0.1.41",
   "description": "A collection of Angular schematics for essential functionalities.",
   "main": "dist/index.js",
   "scripts": {
