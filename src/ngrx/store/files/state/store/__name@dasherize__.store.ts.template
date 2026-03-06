@@ -27,6 +27,7 @@ const config = entityConfig({
 });
 
 export const <%= classify(name) %>Store = signalStore(
+  { providedIn: 'root' },
   withEntities(config),
   withEntityStatus(),
   withPagination(),
@@ -83,7 +84,7 @@ export const <%= classify(name) %>Store = signalStore(
             }),
             catchError(() => {
               patchState(store, (state) => ({
-                status: { ...state.status, error: new Error('Error al cargar horario-accesos'), loading: false }
+                status: { ...state.status, error: new Error('Error al cargar'), loading: false }
               }));
               return EMPTY;
             })
@@ -178,7 +179,7 @@ export const <%= classify(name) %>Store = signalStore(
                 status: {
                   ...state.status,
                   _updateLoading: false,
-                  error: new Error('Error al actualizar horario-acceso'),
+                  error: new Error('Error al actualizar'),
                   idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.<%= pk %>)
                 }
               }));

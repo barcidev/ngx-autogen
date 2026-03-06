@@ -3,7 +3,6 @@ import {
   apply,
   applyTemplates,
   chain,
-  forEach,
   mergeWith,
   move,
   Rule,
@@ -11,54 +10,9 @@ import {
   url,
 } from "@angular-devkit/schematics";
 import { getWorkspace } from "@schematics/angular/utility/workspace";
+import { mergeFilesSmart } from "../../common/file-actions";
+import { pluralizeEn, pluralizeEs } from "../../common/pluralize";
 import { StoreSchemaOptions } from "./schema";
-
-const pluralizeEs = (name: string): string => {
-  if (!name) return name;
-  const lastChar = name.slice(-1).toLowerCase();
-  const vowels = ["a", "e", "i", "o", "u"];
-  if (vowels.includes(lastChar)) return name + "s";
-  if (lastChar === "z") return name.slice(0, -1) + "ces";
-  return name + "es";
-};
-
-const pluralizeEn = (name: string): string => {
-  if (!name) return name;
-  const lastChar = name.slice(-1).toLowerCase();
-  const vowels = ["a", "e", "i", "o", "u"];
-  if (lastChar === "y" && !vowels.includes(name.slice(-2, -1).toLowerCase())) {
-    return name.slice(0, -1) + "ies";
-  }
-  if (
-    ["s", "x", "z", "ch", "sh"].some((end) => name.toLowerCase().endsWith(end))
-  ) {
-    return name + "es";
-  }
-  return name + "s";
-};
-
-function mergeFilesSmart(
-  urlPath: string,
-  destPath: string,
-  options: any,
-  tree: Tree,
-): Rule {
-  return mergeWith(
-    apply(url(urlPath), [
-      applyTemplates({ ...strings, ...options }),
-      move(destPath),
-      forEach((fileEntry) => {
-        if (tree.exists(fileEntry.path)) {
-          const existingContent = tree.read(fileEntry.path)!.toString();
-          if (existingContent.includes(fileEntry.content.toString().trim())) {
-            return null;
-          }
-        }
-        return fileEntry;
-      }),
-    ]),
-  );
-}
 
 export function signalStore(options: StoreSchemaOptions): Rule {
   return async (tree: Tree) => {

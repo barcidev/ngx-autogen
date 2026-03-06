@@ -10,6 +10,11 @@
       "description": "Adds NgRx Store to the Angular application with signal support.",
       "factory": "./ngrx/store/index#signalStore",
       "schema": "./ngrx/store/schema.json"
+    },
+    "app-i18n": {
+      "description": "Adds Transloco to the Angular application.",
+      "factory": "./transloco/index#transloco",
+      "schema": "./transloco/schema.json"
     }
   }
 }

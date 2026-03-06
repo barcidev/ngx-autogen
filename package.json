@@ -1,10 +1,11 @@
 {
   "name": "@barcidev/ngx-autogen",
-  "version": "0.1.7",
+  "version": "0.1.36",
   "description": "A collection of Angular schematics for essential functionalities.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "release": "npm run build && npm publish --access public",
     "test": "npm run build && jasmine src/**/*_spec.js",
     "prepublishOnly": "npm run build"
   },
@@ -47,13 +48,14 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "@angular-devkit/core": "^20.3.13",
-    "@angular-devkit/schematics": "^20.3.13",
-    "@schematics/angular": "^21.0.4",
+    "@angular-devkit/core": "^21.2.0",
+    "@angular-devkit/schematics": "^21.2.0",
+    "@barcidev/typed-transloco": "^0.0.12",
+    "@schematics/angular": "^21.2.0",
     "typescript": "~5.9.2"
   },
   "devDependencies": {
-    "@angular-devkit/schematics-cli": "^21.1.2",
+    "@angular-devkit/schematics-cli": "^21.2.0",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
     "copyfiles": "^2.4.1",

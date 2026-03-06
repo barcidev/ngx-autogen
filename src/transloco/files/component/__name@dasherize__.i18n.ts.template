@@ -1,0 +1,18 @@
+import { TranslationScopeConfig } from '@barcidev/typed-transloco';
+
+const esCO = {
+  title: 'Titulo'
+};
+const enUS = {
+  title: 'Title'
+};
+
+const scope = '<%= name %>' as const;
+
+export const <%= name %>I18n: TranslationScopeConfig<typeof esCO, typeof scope> = {
+  scope,
+  translations: {
+    'en-US': enUS,
+    'es-CO': esCO
+  }
+};
