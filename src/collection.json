@@ -15,6 +15,11 @@
       "description": "Adds Transloco to the Angular application.",
       "factory": "./transloco/index#transloco",
       "schema": "./transloco/schema.json"
+    },
+    "app-component": {
+      "description": "Generates an Angular component with optional i18n and NgRx support.",
+      "factory": "./angular/component/index#component",
+      "schema": "./angular/component/schema.json"
     }
   }
 }

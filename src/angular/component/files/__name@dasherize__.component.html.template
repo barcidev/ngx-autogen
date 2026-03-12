@@ -1,0 +1,20 @@
+<div
+<% if (i18n === 'Yes') { %>
+*typedTransloco="let t; prefix:'<%= camelize(name) %>'"
+<% } %>
+>
+  <h1>
+    <% if (i18n === 'Yes') { %>
+    {{ t('title') }}
+    <% }
+    else { %>
+    <%= classify(name) %> Works!
+    <% } %>
+  </h1>
+
+  <% if (store === 'Yes') { %>
+
+  <pre>{{ data$() | json }}</pre>
+
+  <% } %>
+</div>

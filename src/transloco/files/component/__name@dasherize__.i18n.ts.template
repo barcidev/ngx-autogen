@@ -7,9 +7,9 @@ const enUS = {
   title: 'Title'
 };
 
-const scope = '<%= name %>' as const;
+const scope = '<%= camelize(name) %>' as const;
 
-export const <%= name %>I18n: TranslationScopeConfig<typeof esCO, typeof scope> = {
+export const <%= camelize(name) %>I18n: TranslationScopeConfig<typeof esCO, typeof scope> = {
   scope,
   translations: {
     'en-US': enUS,

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "TranslocoSchematic",
+  "title": "Transloco Schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the component.",
+      "x-prompt": "What's the name of the component?",
+      "priority": 1
+    },
+    "store":{
+      "type": "string",
+      "description": "Whether to create a store for the component.",
+      "x-prompt": "Do you want to create a store for the component?",
+      "enum": ["Yes", "No"]
+    },
+    "i18n": {
+      "type": "string",
+      "description": "Whether to create an i18n file for the component.",
+      "x-prompt": "Do you want to create an i18n file for the component?",
+      "enum": ["Yes", "No"]
+    },
+    "path": {
+      "type": "string",
+      "description": "Destination path."
+    },
+    "lang": {
+      "type": "string",
+      "description": "Language for pluralization ('en' for English, 'es' for Spanish).",
+      "enum": ["en", "es"]
+    }
+  },
+  "required": ["name"]
+}

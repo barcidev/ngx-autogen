@@ -1,6 +1,6 @@
 {
   "name": "@barcidev/ngx-autogen",
-  "version": "0.1.41",
+  "version": "0.1.63",
   "description": "A collection of Angular schematics for essential functionalities.",
   "main": "dist/index.js",
   "scripts": {
@@ -50,7 +50,7 @@
   "dependencies": {
     "@angular-devkit/core": "^21.2.0",
     "@angular-devkit/schematics": "^21.2.0",
-    "@barcidev/typed-transloco": "^0.0.12",
+    "@barcidev/typed-transloco": "^0.0.13",
     "@schematics/angular": "^21.2.0",
     "typescript": "~5.9.2"
   },

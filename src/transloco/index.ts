@@ -12,14 +12,17 @@ import {
   Tree,
   url,
 } from "@angular-devkit/schematics";
-import { getWorkspace } from "@schematics/angular/utility/workspace";
+import {
+  getWorkspace,
+  ProjectDefinition,
+} from "@schematics/angular/utility/workspace";
 import { applyEdits, ModificationOptions, modify } from "jsonc-parser";
 import { join, normalize } from "path";
 
 // Utilidades locales
 import { addMetadataToStandaloneComponent } from "../common/file-actions";
 import { pluralizeEn, pluralizeEs } from "../common/pluralize";
-import { TranslocoSchemaOptions } from "./schema";
+import { TranslocoSchemaOptions } from "./types/types";
 
 export function transloco(options: TranslocoSchemaOptions): Rule {
   return async (tree: Tree) => {
@@ -37,7 +40,7 @@ export function transloco(options: TranslocoSchemaOptions): Rule {
     const projectRoot = project.sourceRoot || "src";
 
     // 2. Resolución de Contexto (Path y Componente)
-    const { path, componentFile, componentName } = resolveComponentContext(
+    const { path, componentFile, componentName } = resolveTranslocoContext(
       tree,
       options,
     );
@@ -52,7 +55,7 @@ export function transloco(options: TranslocoSchemaOptions): Rule {
     };
 
     return chain([
-      ensureExternalConfig(),
+      ensureExternalConfig(project),
       generateI18nFiles(finalOptions),
       updateAppI18nTypeRule(finalOptions),
       registerProviderInComponent(finalOptions, componentFile),
@@ -68,25 +71,47 @@ export function transloco(options: TranslocoSchemaOptions): Rule {
  * Verifica si se requiere el setup global y lo ejecuta.
  * Esto evita el Overlapping edit al no leer archivos antes de tiempo.
  */
-function ensureExternalConfig(): Rule {
-  return (tree: Tree) => {
-    const appConfigPath = "src/app/app.config.ts";
-    const exists = tree.exists(appConfigPath);
+export function ensureExternalConfig(project: ProjectDefinition): Rule {
+  return async (tree: Tree) => {
+    // Buscamos posibles archivos donde se registran providers
+    const configFiles = [
+      "src/app/app.config.ts", // Estándar Standalone
+      "src/app/app.module.ts", // Estándar basado en Módulos
+      getProjectMainFile(project), // Archivo definido en angular.json
+    ];
 
-    if (exists) {
-      const content = tree.read(appConfigPath)!.toString();
-      if (!content.includes("provideTransloco")) {
-        // Al retornar el externalSchematic aquí, Angular CLI
-        // gestiona la creación de archivos global antes de pasar a la siguiente regla del chain
-        return externalSchematic("@barcidev/typed-transloco", "ng-add", {});
+    let providerExists = false;
+
+    for (const path of configFiles) {
+      if (path && tree.exists(path)) {
+        const content = tree.read(path)!.toString();
+        // Usamos Regex simple o mejor aún, validamos el string
+        if (
+          content.includes("provideTransloco") ||
+          content.includes("TranslocoRootModule")
+        ) {
+          providerExists = true;
+          break;
+        }
       }
     }
+
+    if (!providerExists) {
+      return externalSchematic("@barcidev/typed-transloco", "ng-add", {});
+    }
+
     return tree;
   };
 }
 
+// Función auxiliar para obtener el "main" desde la configuración del proyecto
+function getProjectMainFile(project: ProjectDefinition): string | undefined {
+  const buildOptions = project.targets.get("build")?.options;
+  return buildOptions?.main as string | undefined;
+}
+
 // Generación de archivos desde plantillas
-function generateI18nFiles(options: any): Rule {
+function generateI18nFiles(options: TranslocoSchemaOptions): Rule {
   return mergeWith(
     apply(url("./files/component"), [
       applyTemplates({
@@ -95,7 +120,7 @@ function generateI18nFiles(options: any): Rule {
         pluralize: (word: string) =>
           options.lang === "es" ? pluralizeEs(word) : pluralizeEn(word),
       }),
-      move(options.path),
+      move(options.path || "src/app"),
     ]),
   );
 }
@@ -132,24 +157,33 @@ function updateAppI18nTypeRule(options: any): Rule {
 
     if (match) {
       const oldObjectStr = match[1];
-      const propertyKey = camelName;
-      const propertyValue = `${i18nConstantName}.translations['en-US']`;
 
-      // Placeholder para evitar comillas de JSON
-      const placeholder = `__REF__${i18nConstantName}`;
+      // 1. Definimos placeholders únicos para la llave y el valor
+      const keyPlaceholder = `__KEY_REF__${i18nConstantName}`;
+      const valuePlaceholder = `__VAL_REF__${i18nConstantName}`;
+
+      // 2. Aplicamos los cambios usando los placeholders
       const edits = modify(
         oldObjectStr,
-        [propertyKey],
-        placeholder,
+        [keyPlaceholder], // Usamos el placeholder como llave temporal
+        valuePlaceholder, // Usamos el placeholder como valor temporal
         jsonOptions,
       );
+
       let newObjectStr = applyEdits(oldObjectStr, edits);
 
-      newObjectStr = newObjectStr.replace(`"${placeholder}"`, propertyValue);
+      // 3. Reemplazamos los placeholders por el código real (sin comillas)
+      const realKey = `[${i18nConstantName}.scope]`;
+      const realValue = `${i18nConstantName}.translations['en-US'],`;
+
+      newObjectStr = newObjectStr
+        .replace(`"${keyPlaceholder}"`, realKey) // Limpia la llave
+        .replace(`"${valuePlaceholder}"`, realValue); // Limpia el valor
+
+      // 4. Escribimos en el archivo
       tree.overwrite(i18nFilePath, content.replace(oldObjectStr, newObjectStr));
-      context.logger.info(
-        `✅ Tipos actualizados para el scope: ${propertyKey}`,
-      );
+
+      context.logger.info(`✅ Tipos actualizados para el scope: ${realKey}`);
     }
 
     return tree;
@@ -199,23 +233,27 @@ function registerProviderInComponent(
  * --- HELPERS ---
  */
 
-function resolveComponentContext(tree: Tree, options: TranslocoSchemaOptions) {
+function resolveTranslocoContext(tree: Tree, options: TranslocoSchemaOptions) {
   const fullPath = process.cwd();
   const srcIndex = fullPath.lastIndexOf("src");
-  const path = normalize(
-    srcIndex !== -1
-      ? fullPath.substring(srcIndex)
-      : join(normalize("src"), "app"),
-  );
+  const path =
+    options.path ||
+    normalize(
+      srcIndex !== -1
+        ? fullPath.substring(srcIndex)
+        : join(normalize("src"), "app"),
+    );
 
+  let componentName = options.name;
   const directory = tree.getDir(path);
   const componentFile =
     directory.subfiles.find((f) => f.endsWith(".component.ts")) ||
     directory.subfiles.find((f) => f.endsWith(".ts"));
 
-  const componentName = componentFile
-    ? componentFile.replace(".component.ts", "").replace(".ts", "")
-    : options.name;
+  if (!options.name) {
+    componentName =
+      componentFile?.replace(".component.ts", "").replace(".ts", "") || "file";
+  }
 
   if (!componentName)
     throw new SchematicsException(

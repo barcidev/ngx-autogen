@@ -14,6 +14,7 @@ import {
 import { NodePackageInstallTask } from "@angular-devkit/schematics/tasks";
 import {
   addPackageJsonDependency,
+  getPackageJsonDependency,
   NodeDependencyType,
 } from "@schematics/angular/utility/dependencies";
 import {
@@ -23,7 +24,8 @@ import {
 import { applyEdits, ModificationOptions, modify, parse } from "jsonc-parser";
 import { mergeFilesSmart } from "../../common/file-actions";
 import { pluralizeEn, pluralizeEs } from "../../common/pluralize";
-import { StoreSchemaOptions } from "./schema";
+import { getProjectMetadata } from "../../common/project-metadata";
+import { StoreSchemaOptions } from "./types/types";
 
 const NGRX_SIGNALS = "@ngrx/signals";
 
@@ -33,7 +35,13 @@ export function signalStore(options: StoreSchemaOptions): Rule {
 
     // 1. Preparar contexto y opciones enriquecidas
     const context = resolveStoreContext(workspace, options);
-    const project = workspace.projects.get(context.projectName);
+    const project = workspace.projects.get(
+      options.project || context.projectName,
+    );
+    if (!project)
+      throw new SchematicsException(
+        `El proyecto "${options.project || context.projectName}" no existe.`,
+      );
     const projectRoot = project?.sourceRoot || "src";
 
     const { angularVersion } = getProjectMetadata(tree);
@@ -64,20 +72,6 @@ export function signalStore(options: StoreSchemaOptions): Rule {
  * --- LÓGICA DE EXTRACCIÓN Y PREPARACIÓN ---
  */
 
-function getProjectMetadata(tree: Tree) {
-  const buffer = tree.read("package.json");
-  if (!buffer) throw new SchematicsException("No se encontró package.json");
-  const packageJson = JSON.parse(buffer.toString());
-  const angularCore =
-    packageJson.dependencies?.["@angular/core"] ||
-    packageJson.devDependencies?.["@angular/core"];
-  const angularVersion = parseInt(
-    angularCore.replace(/[^\d.]/g, "").split(".")[0],
-    10,
-  );
-  return { angularVersion };
-}
-
 function resolveStoreContext(
   workspace: WorkspaceDefinition,
   options: StoreSchemaOptions,
@@ -92,9 +86,10 @@ function resolveStoreContext(
   const fullPath = process.cwd();
   const srcIndex = fullPath.lastIndexOf("src");
   let relativePath =
-    srcIndex !== -1
+    options.path ||
+    (srcIndex !== -1
       ? fullPath.substring(srcIndex)
-      : join(normalize("src"), "app");
+      : join(normalize("src"), "app"));
 
   let movePath = normalize(relativePath);
   if (!movePath.endsWith("state")) movePath = join(movePath, "state");
@@ -124,12 +119,23 @@ function resolveStoreContext(
  */
 function ensureNgrxSignals(version: number): Rule {
   return (tree: Tree) => {
+    // 1. Intentamos obtener la dependencia si ya existe
+    const existingDep = getPackageJsonDependency(tree, NGRX_SIGNALS);
+
+    // 2. Si existe, simplemente retornamos el árbol sin hacer nada
+    if (existingDep) {
+      // Opcional: podrías loguear un mensaje aquí
+      return tree;
+    }
+
+    // 3. Si no existe, la añadimos
     addPackageJsonDependency(tree, {
       type: NodeDependencyType.Default,
       name: NGRX_SIGNALS,
       version: `^${version}.0.0`,
-      overwrite: false, // NO sobreescribe si ya está instalado
+      overwrite: false,
     });
+
     return tree;
   };
 }

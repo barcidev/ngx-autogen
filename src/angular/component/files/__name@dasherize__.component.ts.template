@@ -1,0 +1,17 @@
+import { Component, inject } from '@angular/core';
+<% if (store === 'Yes') { %>
+import { <%= classify(name) %>Store } from './state';
+import { JsonPipe } from '@angular/common';
+<% } %>
+
+@Component({
+  imports: [<% if (store === 'Yes') { %>JsonPipe<% } %>],
+  providers: [],
+  selector: 'app-<%= dasherize(name) %>',
+  styleUrls: ['./<%= dasherize(name) %>.component.css'],
+  templateUrl: './<%= dasherize(name) %>.component.html',
+})
+export class <%= classify(name) %>Component {
+<% if (store === 'Yes') { %>  private _<%= camelize(name) %>Store = inject(<%= classify(name) %>Store);
+  data$ = this._<%= camelize(name) %>Store.entities();<% } %>
+}
