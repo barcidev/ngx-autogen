@@ -1,4 +1,4 @@
-import { TranslationScopeConfig } from '@barcidev/typed-transloco';
+import { TranslocoUtils } from '@barcidev/typed-transloco';
 
 const esCO = {
   title: 'Titulo'
@@ -7,12 +7,7 @@ const enUS = {
   title: 'Title'
 };
 
-const scope = '<%= camelize(name) %>' as const;
-
-export const <%= camelize(name) %>I18n: TranslationScopeConfig<typeof esCO, typeof scope> = {
-  scope,
-  translations: {
+export const <%= camelize(name) %>I18n = TranslocoUtils.createScopeConfig('<%= camelize(name) %>', {
     'en-US': enUS,
     'es-CO': esCO
-  }
-};
+  });
