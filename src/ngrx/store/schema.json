@@ -28,6 +28,19 @@
     "lang":{
       "type": "string",
       "description": "The default language for the application (en, es); default is 'en'."
+    },
+    "isProvideInRoot": {
+      "type": "boolean",
+      "description": "Whether the store and service should be provided in root.",
+      "default": false,
+      "x-prompt": {
+        "message": "Should the store and service be provided in root?",
+        "type": "list",
+        "items": [
+          { "value": true, "label": "Yes" },
+          { "value": false, "label": "No" }
+        ]
+      }
     }
   },
   "required": ["name"]

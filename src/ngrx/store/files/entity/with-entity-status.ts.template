@@ -1,4 +1,5 @@
 import { computed, Signal } from '@angular/core';
+import { EntityId } from '@ngrx/signals/entities';
 import { EmptyFeatureResult, SignalStoreFeature, signalStoreFeature, withComputed, withState } from '@ngrx/signals';
 
 export interface EntityStatus {
@@ -7,9 +8,9 @@ export interface EntityStatus {
   addError: Error | null;
   addLoading: boolean;
   error: Error | null;
-  idSelected: null | number | string;
-  idsRemoving: (number | string)[];
-  idsUpdating: (number | string)[];
+  idSelected: EntityId | null;
+  idsRemoving: EntityId[];
+  idsUpdating: EntityId[];
   loaded: boolean;
   loading: boolean;
   removeError: Error | null;

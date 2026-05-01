@@ -6,9 +6,7 @@ import {
   Update<%= classify(name) %>
 } from '<%= grouped ? "../models/" + dasherize(name) + ".model" : "./" + dasherize(name) + ".model" %>';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable(<%= isProvideInRoot ? "{ providedIn: 'root' }" : "" %>)
 export class <%= classify(name) %>Service {
 
   add<%= classify(name) %>$(payload: Add<%= classify(name) %>): Observable<number> {

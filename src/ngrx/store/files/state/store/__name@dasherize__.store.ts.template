@@ -10,6 +10,7 @@ import {
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { catchError, EMPTY, pipe, switchMap, tap } from 'rxjs';
+import { EntityId } from '@ngrx/signals/entities';
 
 import { RequestConfig } from '@shared-state/entity.model';
 import { withPagination } from '@shared-state/with-entity-pagination';
@@ -27,12 +28,11 @@ const config = entityConfig({
 });
 
 export const <%= classify(name) %>Store = signalStore(
-  { providedIn: 'root' },
+  <%= isProvideInRoot ? "{ providedIn: 'root' }," : "" %>
   withEntities(config),
   withEntityStatus(),
   withPagination(),
   withComputed(({ entities, entityMap, status: { idSelected } }) => ({
-    <%= camelize(pluralize(name)) %>: computed(() => entities()),
     <%= camelize(name) %>Seleccionado: computed(() => {
       const <%= pk %> = idSelected();
       return <%= pk %> ? entityMap()[<%= pk %>] : null;
@@ -139,6 +139,18 @@ export const <%= classify(name) %>Store = signalStore(
               return EMPTY;
             })
           );
+        })
+      )
+    ),
+    select<%= classify(name) %>: rxMethod<EntityId | null>(
+      pipe(
+        tap((payload) => {
+          patchState(store, (state) => ({
+            status: {
+              ...state.status,
+              idSelected: payload
+            }
+          }));
         })
       )
     ),
