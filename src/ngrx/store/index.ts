@@ -28,9 +28,11 @@ import { getProjectMetadata } from "../../common/project-metadata";
 import { StoreSchemaOptions } from "./types/types";
 
 const NGRX_SIGNALS = "@ngrx/signals";
+let _needsInstall = false;
 
 export function signalStore(options: StoreSchemaOptions): Rule {
   return async (tree: Tree) => {
+    _needsInstall = false;
     const workspace = await getWorkspace(tree);
 
     // 1. Preparar contexto y opciones enriquecidas
@@ -59,9 +61,12 @@ export function signalStore(options: StoreSchemaOptions): Rule {
       ),
       updateAngularJson(context.options),
       updateTsConfigRule(projectRoot),
-      (host: Tree, context: SchematicContext) => {
-        context.addTask(new NodePackageInstallTask());
-        context.logger.info("🚀 Entorno preparado con éxito.");
+      (host: Tree, ctx: SchematicContext) => {
+        if (_needsInstall) {
+          ctx.addTask(new NodePackageInstallTask());
+          ctx.logger.info("📦 Instalando dependencias...");
+        }
+        ctx.logger.info("🚀 Entorno preparado con éxito.");
         return host;
       },
     ]);
@@ -119,16 +124,10 @@ function resolveStoreContext(
  */
 function ensureNgrxSignals(version: number): Rule {
   return (tree: Tree) => {
-    // 1. Intentamos obtener la dependencia si ya existe
     const existingDep = getPackageJsonDependency(tree, NGRX_SIGNALS);
 
-    // 2. Si existe, simplemente retornamos el árbol sin hacer nada
-    if (existingDep) {
-      // Opcional: podrías loguear un mensaje aquí
-      return tree;
-    }
+    if (existingDep) return tree;
 
-    // 3. Si no existe, la añadimos
     addPackageJsonDependency(tree, {
       type: NodeDependencyType.Default,
       name: NGRX_SIGNALS,
@@ -136,6 +135,7 @@ function ensureNgrxSignals(version: number): Rule {
       overwrite: false,
     });
 
+    _needsInstall = true;
     return tree;
   };
 }
@@ -211,28 +211,37 @@ function updateTsConfigRule(root: string): Rule {
     if (!buffer) return;
 
     let content = buffer.toString();
+    const parsed = parse(content);
+
+    // Calcular el path esperado del alias
+    const baseUrl = parsed.compilerOptions?.baseUrl || "./";
+    let i18nPath = `${root}/app/shared/state/*`;
+    const normalizedBase = baseUrl.replace(/^\.\/|\/$/g, "");
+    if (normalizedBase && i18nPath.startsWith(normalizedBase)) {
+      i18nPath = i18nPath.replace(normalizedBase, "").replace(/^\//, "");
+    }
+
+    // Verificar si ya tiene baseUrl y el alias correcto
+    const existingPaths = parsed.compilerOptions?.paths?.["@shared-state/*"];
+    const alreadyConfigured =
+      parsed.compilerOptions?.baseUrl &&
+      Array.isArray(existingPaths) &&
+      existingPaths.length === 1 &&
+      existingPaths[0] === i18nPath;
+
+    if (alreadyConfigured) return;
+
     const modOptions: ModificationOptions = {
       formattingOptions: { insertSpaces: true, tabSize: 2 },
     };
 
-    // 1. Asegurar baseUrl
-    if (!parse(content).compilerOptions?.baseUrl) {
+    if (!parsed.compilerOptions?.baseUrl) {
       content = applyEdits(
         content,
         modify(content, ["compilerOptions", "baseUrl"], "./", modOptions),
       );
     }
 
-    // 2. Calcular path relativo al baseUrl
-    const baseUrl = parse(content).compilerOptions?.baseUrl || "./";
-    let i18nPath = `${root}/app/shared/state/*`;
-    const normalizedBase = baseUrl.replace(/^\.\/|\/$/g, "");
-
-    if (normalizedBase && i18nPath.startsWith(normalizedBase)) {
-      i18nPath = i18nPath.replace(normalizedBase, "").replace(/^\//, "");
-    }
-
-    // 3. Aplicar alias
     const finalContent = applyEdits(
       content,
       modify(
@@ -255,6 +264,9 @@ function updateAngularJson(options: StoreSchemaOptions) {
     if (!buffer) return;
 
     const workspace = JSON.parse(buffer.toString());
+    const existing = workspace.schematics?.["@barcidev/ngx-autogen:signal-state"];
+
+    if (existing?.pk === options.pk && existing?.lang === options.lang) return;
 
     if (!workspace.schematics) workspace.schematics = {};
     workspace.schematics["@barcidev/ngx-autogen:signal-state"] = {
