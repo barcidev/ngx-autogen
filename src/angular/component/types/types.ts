@@ -10,6 +10,7 @@ export interface ComponentSchemaOptions {
   name: string;
   project?: string;
   store: "Yes" | "No";
+  storeName?: string;
   i18n: "Yes" | "No";
   pk?: string;
   isProvideInRoot?: boolean;

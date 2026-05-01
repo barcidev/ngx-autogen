@@ -25,6 +25,12 @@ export function component(options: ComponentSchemaOptions): Rule {
     const workspace = await getWorkspace(tree);
 
     if (options.store === "Yes") {
+      if (!options.storeName) {
+        options.storeName = await askInput(
+          "What is the name of the entity store to create?",
+          options.name,
+        );
+      }
       if (!options.pk) {
         options.pk = await askInput(
           "What is the name of the default Primary Key (e.g., id, cod, uuid)?",
@@ -51,7 +57,7 @@ export function component(options: ComponentSchemaOptions): Rule {
         : noop(),
       options.store === "Yes"
         ? schematic("app-store", {
-            name: context.options.name,
+            name: options.storeName || context.options.name,
             path: join(context.movePath, context.nameDash),
             pk: context.options.pk,
             isProvideInRoot: context.options.isProvideInRoot,
