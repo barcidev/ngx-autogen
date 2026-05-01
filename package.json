@@ -1,6 +1,6 @@
 {
   "name": "@barcidev/ngx-autogen",
-  "version": "0.1.67",
+  "version": "0.1.68",
   "description": "A collection of Angular schematics for essential functionalities.",
   "main": "dist/index.js",
   "scripts": {
@@ -86,6 +86,8 @@
     }
   },
   "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
     "./entity": {
       "types": "./dist/lib/entity/index.d.ts",
       "default": "./dist/lib/entity/index.js"
