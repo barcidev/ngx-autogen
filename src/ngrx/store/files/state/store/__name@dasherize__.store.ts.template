@@ -211,3 +211,10 @@ export const <%= classify(name) %>Store = signalStore(
     },
   })
 );
+
+export function provide<%= classify(name) %>Store() {
+  return <%= isProvideInRoot ?  [
+      <%= classify(name) %>Service,
+      <%= classify(name) %>Store,
+    ] : [ <%= classify(name) %>Store ]
+}
