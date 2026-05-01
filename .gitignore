@@ -2,6 +2,7 @@
 # Outputs
 src/**/*.js
 src/**/*.js.map
+dist/
 
 # IDEs
 .idea/

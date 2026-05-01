@@ -1,4 +1,4 @@
-import { FormGroupType } from '@shared-state/entity.model';
+import { FormGroupType } from '@barcidev/ngx-autogen/entity';
 
 export interface Add<%= classify(name) %> {
 }

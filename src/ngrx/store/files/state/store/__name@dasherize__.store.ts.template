@@ -12,9 +12,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { catchError, EMPTY, pipe, switchMap, tap } from 'rxjs';
 import { EntityId } from '@ngrx/signals/entities';
 
-import { RequestConfig } from '@shared-state/entity.model';
-import { withPagination } from '@shared-state/with-entity-pagination';
-import { withEntityStatus } from '@shared-state/with-entity-status';
+import { RequestConfig, withEntityStatus, withPagination } from '@barcidev/ngx-autogen/entity';
 import {
   Add<%= classify(name) %>,
   <%= classify(name) %>Dto,

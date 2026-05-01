@@ -22,7 +22,6 @@ import {
   WorkspaceDefinition,
 } from "@schematics/angular/utility/workspace";
 import { applyEdits, ModificationOptions, modify, parse } from "jsonc-parser";
-import { mergeFilesSmart } from "../../common/file-actions";
 import { pluralizeEn, pluralizeEs } from "../../common/pluralize";
 import { getProjectMetadata } from "../../common/project-metadata";
 import { StoreSchemaOptions } from "./types/types";
@@ -53,12 +52,6 @@ export function signalStore(options: StoreSchemaOptions): Rule {
       ensureNgrxSignals(angularVersion),
       updateIndexFile(context),
       generateStoreFiles(context),
-      mergeFilesSmart(
-        "./files/entity",
-        "src/app/shared/state",
-        context.options,
-        tree,
-      ),
       updateAngularJson(context.options),
       updateTsConfigRule(projectRoot),
       (host: Tree, ctx: SchematicContext) => {

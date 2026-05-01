@@ -4,7 +4,7 @@
   "description": "A collection of Angular schematics for essential functionalities.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.lib.json",
     "release": "npm run build && npm publish --access public",
     "test": "npm run build && jasmine src/**/*_spec.js",
     "prepublishOnly": "npm run build"
@@ -15,6 +15,8 @@
     "src/**/*.d.ts",
     "src/**/schema.json",
     "src/collection.json",
+    "dist/lib/**/*.js",
+    "dist/lib/**/*.d.ts",
     "README.md",
     "LICENSE"
   ],
@@ -56,9 +58,37 @@
   },
   "devDependencies": {
     "@angular-devkit/schematics-cli": "^21.2.0",
+    "@angular/forms": "^21.2.11",
+    "@ngrx/signals": "^21.1.0",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
     "copyfiles": "^2.4.1",
     "jasmine": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=17.0.0",
+    "@angular/core": ">=17.0.0",
+    "@angular/forms": ">=17.0.0",
+    "@ngrx/signals": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/common": {
+      "optional": true
+    },
+    "@angular/core": {
+      "optional": true
+    },
+    "@angular/forms": {
+      "optional": true
+    },
+    "@ngrx/signals": {
+      "optional": true
+    }
+  },
+  "exports": {
+    "./entity": {
+      "types": "./dist/lib/entity/index.d.ts",
+      "default": "./dist/lib/entity/index.js"
+    }
   }
 }
