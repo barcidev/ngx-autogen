@@ -17,16 +17,29 @@ import {
 } from "@schematics/angular/utility/workspace";
 import { join, normalize } from "path";
 import { pluralizeEn, pluralizeEs } from "../../common/pluralize";
+import { askConfirm, askInput } from "../../common/prompts";
 import { ComponentContext, ComponentSchemaOptions } from "./types/types";
 
 export function component(options: ComponentSchemaOptions): Rule {
   return async (tree: Tree) => {
     const workspace = await getWorkspace(tree);
 
-    // 1. Preparar contexto y opciones enriquecidas
-    const context = resolveComponentContext(workspace, options);
+    if (options.store === "Yes") {
+      if (!options.pk) {
+        options.pk = await askInput(
+          "What is the name of the default Primary Key (e.g., id, cod, uuid)?",
+          "id",
+        );
+      }
+      if (options.isProvideInRoot === undefined) {
+        options.isProvideInRoot = await askConfirm(
+          "Should the store and service be provided in root?",
+          false,
+        );
+      }
+    }
 
-    // Aquí podrías agregar más reglas para otras funcionalidades, como NgRx
+    const context = resolveComponentContext(workspace, options);
 
     return chain([
       generateComponentFiles(context),
@@ -40,6 +53,8 @@ export function component(options: ComponentSchemaOptions): Rule {
         ? schematic("app-store", {
             name: context.options.name,
             path: join(context.movePath, context.nameDash),
+            pk: context.options.pk,
+            isProvideInRoot: context.options.isProvideInRoot,
           })
         : noop(),
     ]);

@@ -5,4 +5,5 @@ export interface StoreSchemaOptions {
     grouped: boolean;
     pk?: string;
     lang: "en" | "es";
+    isProvideInRoot: boolean;
 }

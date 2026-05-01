@@ -22,6 +22,16 @@
       "x-prompt": "Do you want to create an i18n file for the component?",
       "enum": ["Yes", "No"]
     },
+    "pk": {
+      "type": "string",
+      "description": "The name of the default Primary Key (e.g., id, cod, uuid); default is 'id'.",
+      "default": "id"
+    },
+    "isProvideInRoot": {
+      "type": "boolean",
+      "description": "Whether the store and service should be provided in root.",
+      "default": false
+    },
     "path": {
       "type": "string",
       "description": "Destination path."

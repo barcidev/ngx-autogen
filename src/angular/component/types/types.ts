@@ -11,6 +11,8 @@ export interface ComponentSchemaOptions {
   project?: string;
   store: "Yes" | "No";
   i18n: "Yes" | "No";
+  pk?: string;
+  isProvideInRoot?: boolean;
   path?: string;
   lang?: "en" | "es";
 }
