@@ -30,7 +30,7 @@ export const <%= classify(name) %>Store = signalStore(
   withEntities(config),
   withEntityStatus(),
   withPagination(),
-  withComputed(({ entities, entityMap, status: { idSelected } }) => ({
+  withComputed(({ entityMap, status: { idSelected } }) => ({
     <%= camelize(name) %>Seleccionado: computed(() => {
       const <%= pk %> = idSelected();
       return <%= pk %> ? entityMap()[<%= pk %>] : null;
@@ -211,8 +211,10 @@ export const <%= classify(name) %>Store = signalStore(
 );
 
 export function provide<%= classify(name) %>Store() {
-  return <%= isProvideInRoot ?  [
-      <%= classify(name) %>Service,
-      <%= classify(name) %>Store,
-    ] : [ <%= classify(name) %>Store ]
+<% if (isProvideInRoot) { %> return [
+    <%= classify(name) %>Store,
+  ]; <% } else { %>  return [
+    <%= classify(name) %>Service,
+    <%= classify(name) %>Store,
+  ];<% } %>
 }
