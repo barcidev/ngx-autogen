@@ -40,6 +40,26 @@
       "type": "string",
       "description": "Language for pluralization ('en' for English, 'es' for Spanish).",
       "enum": ["en", "es"]
+    },
+    "style": {
+      "type": "string",
+      "description": "The file extension or preprocessor to use for style files.",
+      "default": "css"
+    },
+    "skipTests": {
+      "type": "boolean",
+      "description": "Do not create \"spec.ts\" test files for the new class.",
+      "default": false
+    },
+    "inlineStyle": {
+      "type": "boolean",
+      "description": "Include styles inline in the component.ts file. Only CSS styles can be included inline.",
+      "default": false
+    },
+    "inlineTemplate": {
+      "type": "boolean",
+      "description": "Include template inline in the component.ts file.",
+      "default": false
     }
   },
   "required": ["name"]

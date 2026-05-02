@@ -15,4 +15,8 @@ export interface ComponentSchemaOptions {
     isProvideInRoot?: boolean;
     path?: string;
     lang?: "en" | "es";
+    style?: string;
+    skipTests?: boolean;
+    inlineStyle?: boolean;
+    inlineTemplate?: boolean;
 }

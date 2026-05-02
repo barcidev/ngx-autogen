@@ -1,4 +1,5 @@
 import { join, normalize, strings } from "@angular-devkit/core";
+import { Project, QuoteKind } from "ts-morph";
 import {
   apply,
   applyTemplates,
@@ -135,35 +136,37 @@ function ensureNgrxSignals(version: number): Rule {
 
 function updateIndexFile(ctx: any): Rule {
   return (tree: Tree) => {
-    const { options, indexPath, nameDash, entityName } = ctx;
-    const entityHeader = `/* ${entityName.toUpperCase()} */`;
-
-    const exportBlock = [
-      entityHeader,
-      `export * from './${nameDash}${options.grouped ? "/models" : ""}/${nameDash}.model';`,
-      `export * from './${nameDash}${options.grouped ? "/services" : ""}/${nameDash}.service';`,
-      `export * from './${nameDash}/${nameDash}.store';`,
-      "",
-    ].join("\n");
+    const { options, indexPath, nameDash } = ctx;
 
     let content = tree.exists(indexPath)
       ? tree.read(indexPath)!.toString()
       : "";
 
-    if (content.includes(entityHeader)) {
-      // Evitar duplicados línea por línea
-      const newLines = exportBlock
-        .split("\n")
-        .filter((line) => line.trim() !== "" && !content.includes(line));
-      if (newLines.length > 0) content += newLines.join("\n") + "\n";
-    } else {
-      content =
-        content.trim() + (content.length > 0 ? "\n\n" : "") + exportBlock;
+    const project = new Project({
+      manipulationSettings: { quoteKind: QuoteKind.Single }
+    });
+    const sourceFile = project.createSourceFile('index.ts', content);
+
+    const exportsToAdd = [
+      `./${nameDash}${options.grouped ? "/models" : ""}/${nameDash}.model`,
+      `./${nameDash}${options.grouped ? "/services" : ""}/${nameDash}.service`,
+      `./${nameDash}/${nameDash}.store`
+    ];
+
+    const currentExports = sourceFile.getExportDeclarations().map(e => e.getModuleSpecifierValue());
+
+    for (const exp of exportsToAdd) {
+      if (!currentExports.includes(exp)) {
+        sourceFile.addExportDeclaration({ moduleSpecifier: exp });
+      }
     }
 
+    const newContent = sourceFile.getFullText();
+
     tree.exists(indexPath)
-      ? tree.overwrite(indexPath, content)
-      : tree.create(indexPath, content);
+      ? tree.overwrite(indexPath, newContent)
+      : tree.create(indexPath, newContent);
+
     return tree;
   };
 }

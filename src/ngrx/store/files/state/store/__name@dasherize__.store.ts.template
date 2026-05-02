@@ -54,8 +54,7 @@ export const <%= classify(name) %>Store = signalStore(
                 onSuccess(new<%= classify(name) %>);
               }
             }),
-            catchError(() => {
-              const error = new Error('');
+            catchError((error) => {
               patchState(store, (state) => ({
                 status: { ...state.status, addError: error, addLoading: false }
               }));
@@ -80,9 +79,9 @@ export const <%= classify(name) %>Store = signalStore(
                 status: { ...state.status, error: null, loaded: true, loading: false }
               }));
             }),
-            catchError(() => {
+            catchError((error) => {
               patchState(store, (state) => ({
-                status: { ...state.status, error: new Error('Error al cargar'), loading: false }
+                status: { ...state.status, error, loading: false }
               }));
               return EMPTY;
             })
@@ -121,13 +120,13 @@ export const <%= classify(name) %>Store = signalStore(
                 throw new Error();
               }
             }),
-            catchError(() => {
+            catchError((error) => {
               const idsRemoving = store.status.idsRemoving() || [];
               patchState(store, (state) => ({
                 status: {
                   ...state.status,
                   _removeLoading: false,
-                  error: new Error(),
+                  error,
                   idsRemoving: idsRemoving.filter((idRemoving) => idRemoving !== payload)
                 }
               }));
@@ -183,13 +182,13 @@ export const <%= classify(name) %>Store = signalStore(
                 throw new Error('');
               }
             }),
-            catchError(() => {
+            catchError((error) => {
               const idsUpdating = store.status.idsUpdating() || [];
               patchState(store, (state) => ({
                 status: {
                   ...state.status,
                   _updateLoading: false,
-                  error: new Error('Error al actualizar'),
+                  error,
                   idsUpdating: idsUpdating.filter((idUpdating) => idUpdating !== payload.<%= pk %>)
                 }
               }));
