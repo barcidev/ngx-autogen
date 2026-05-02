@@ -1,25 +1,25 @@
 <p align="center">
-  <h1 align="center">@barcidev/ngx-autogen</h1>
+  <img src="./ngx_autogen_banner_1777684797010.png" alt="ngx-autogen banner" width="100%">
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="README_ES.md">Español</a>
+  <a href="README.md">🇺🇸 English</a> | <a href="README_ES.md">🇪🇸 Español</a>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@barcidev/ngx-autogen"><img src="https://img.shields.io/npm/v/@barcidev/ngx-autogen" alt="npm version"></a>
-  <a href="https://github.com/jpalacio09/ngx-autogen/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@barcidev/ngx-autogen" alt="license"></a>
-  <img src="https://img.shields.io/badge/Angular-17%2B-DD0031?logo=angular" alt="Angular 17+">
-  <img src="https://img.shields.io/badge/NgRx%20Signals-17%2B-BA2BD2?logo=ngrx" alt="NgRx Signals 17+">
+  <a href="https://www.npmjs.com/package/@barcidev/ngx-autogen"><img src="https://img.shields.io/npm/v/@barcidev/ngx-autogen?style=for-the-badge&color=007acc&labelColor=010101" alt="npm version"></a>
+  <a href="https://github.com/jpalacio09/ngx-autogen/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@barcidev/ngx-autogen?style=for-the-badge&color=green&labelColor=010101" alt="license"></a>
+  <img src="https://img.shields.io/badge/Angular-17%2B-DD0031?style=for-the-badge&logo=angular&labelColor=010101" alt="Angular 17+">
+  <img src="https://img.shields.io/badge/NgRx%20Signals-17%2B-BA2BD2?style=for-the-badge&logo=ngrx&labelColor=010101" alt="NgRx Signals 17+">
 </p>
 
 <p align="center">
-  Angular schematics that scaffold complete NgRx Signal Store entities, Transloco i18n scopes, and standalone components in seconds.
+  <b>⚡ Angular schematics that scaffold complete NgRx Signal Store entities, Transloco i18n scopes, and standalone components in seconds. ⚡</b>
 </p>
 
 ---
 
-## Table of Contents
+## 📖 Table of Contents
 
 - [Overview](#overview)
 - [Requirements](#requirements)
@@ -36,7 +36,7 @@
 
 ---
 
-## Overview
+## 🌟 Overview
 
 `@barcidev/ngx-autogen` is a collection of Angular schematics designed to eliminate repetitive scaffolding when building enterprise Angular applications. It generates production-ready code for three core concerns:
 
@@ -48,7 +48,7 @@ The library also ships runtime utilities under `@barcidev/ngx-autogen/entity` th
 
 ---
 
-## Requirements
+## 📋 Requirements
 
 | Dependency | Minimum Version |
 |---|---|
@@ -60,7 +60,7 @@ The library also ships runtime utilities under `@barcidev/ngx-autogen/entity` th
 
 ---
 
-## Installation
+## 🚀 Installation
 
 ### Via ng add (recommended)
 
@@ -91,7 +91,7 @@ npm install @barcidev/ngx-autogen --save-dev
 
 ---
 
-## Runtime Exports
+## 🛠️ Runtime Exports
 
 The library exports reusable NgRx Signal Store features under the `@barcidev/ngx-autogen/entity` entry point:
 
@@ -108,7 +108,7 @@ import { withEntityStatus, withPagination, RequestConfig, FormGroupType } from '
 
 ---
 
-## Schematics Reference
+## 📖 Schematics Reference
 
 ### `ng-add`
 
@@ -380,6 +380,6 @@ src/app/user-profile/
 
 ---
 
-## License
+## ⚖️ License
 
 [MIT](./LICENSE) - Jorge Palacio Barcinilla
