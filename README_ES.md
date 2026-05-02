@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./ngx_autogen_banner_1777684797010.png" alt="ngx-autogen banner" width="100%">
+  <img src="./logo.png" alt="ngx-autogen logo" width="120">
 </p>
 
 <p align="center">
