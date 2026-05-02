@@ -3,10 +3,6 @@
 </p>
 
 <p align="center">
-  <img src="./ngx_autogen_banner_1777684797010.png" alt="ngx-autogen banner" width="100%">
-</p>
-
-<p align="center">
   <a href="README.md">🇺🇸 English</a> | <a href="README_ES.md">🇪🇸 Español</a>
 </p>
 
