@@ -18,6 +18,7 @@
     "dist/lib/**/*.js",
     "dist/lib/**/*.d.ts",
     "README.md",
+    "README_ES.md",
     "LICENSE"
   ],
   "keywords": [

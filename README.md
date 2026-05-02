@@ -3,6 +3,10 @@
 </p>
 
 <p align="center">
+  <a href="README.md">English</a> | <a href="README_ES.md">Español</a>
+</p>
+
+<p align="center">
   <a href="https://www.npmjs.com/package/@barcidev/ngx-autogen"><img src="https://img.shields.io/npm/v/@barcidev/ngx-autogen" alt="npm version"></a>
   <a href="https://github.com/jpalacio09/ngx-autogen/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@barcidev/ngx-autogen" alt="license"></a>
   <img src="https://img.shields.io/badge/Angular-17%2B-DD0031?logo=angular" alt="Angular 17+">
