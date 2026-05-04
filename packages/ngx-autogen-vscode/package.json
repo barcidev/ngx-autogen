@@ -1,0 +1,71 @@
+{
+  "name": "ngx-autogen-vscode",
+  "displayName": "ngx-autogen",
+  "description": "Generate NgRx Signal Store, Transloco i18n scopes and Angular components from the context menu",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Snippets",
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ngx-autogen.generateStore",
+        "title": "ngx-autogen: Generate Store (app-store)"
+      },
+      {
+        "command": "ngx-autogen.generateI18n",
+        "title": "ngx-autogen: Generate i18n Scope (app-i18n)"
+      },
+      {
+        "command": "ngx-autogen.generateComponent",
+        "title": "ngx-autogen: Generate Component (app-component)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "submenu": "ngx-autogen.submenu",
+          "group": "navigation",
+          "when": "explorerResourceIsFolder"
+        }
+      ],
+      "ngx-autogen.submenu": [
+        {
+          "command": "ngx-autogen.generateStore",
+          "group": "1_generate"
+        },
+        {
+          "command": "ngx-autogen.generateI18n",
+          "group": "1_generate"
+        },
+        {
+          "command": "ngx-autogen.generateComponent",
+          "group": "1_generate"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "ngx-autogen.submenu",
+        "label": "ngx-autogen"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.1.3"
+  }
+}
