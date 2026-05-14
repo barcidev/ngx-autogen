@@ -17,11 +17,14 @@ export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean
   });
   if (!entityName) return;
 
-  const groupedLayoutSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
-    placeHolder: 'Use grouped layout? (models/ and services/ subfolders)'
-  });
-  if (!groupedLayoutSelection) return;
-  const useGroupedLayout = groupedLayoutSelection === 'Yes';
+  let useGroupedLayout = config?.store?.useGroupedLayout;
+  if (useGroupedLayout === undefined) {
+    const groupedLayoutSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+      placeHolder: 'Use grouped layout? (models/ and services/ subfolders)'
+    });
+    if (!groupedLayoutSelection) return;
+    useGroupedLayout = groupedLayoutSelection === 'Yes';
+  }
 
   let primaryKey = config?.store?.primaryKey;
   if (!primaryKey) {
@@ -60,13 +63,14 @@ export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean
 
   await generateStore(uri.fsPath, options);
 
-  if (workspaceFolder && !config && !interactive) {
+  if (workspaceFolder) {
     await promptToSaveConfig(workspaceFolder, {
       defaultLang,
       store: {
         primaryKey,
-        provideInRoot
+        provideInRoot,
+        useGroupedLayout
       }
-    });
+    }, interactive);
   }
 }

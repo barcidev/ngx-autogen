@@ -13,6 +13,7 @@ export interface AutogenConfig {
   store?: {
     primaryKey?: string;
     provideInRoot?: boolean;
+    useGroupedLayout?: boolean;
   };
 }
 
@@ -42,34 +43,85 @@ export function saveConfig(workspacePath: string, config: AutogenConfig): void {
   const configPath = getConfigPath(workspacePath);
   
   // Merge with existing config if present
-  let finalConfig = config;
+  let finalConfig: any = config;
   if (fs.existsSync(configPath)) {
     try {
       const existing = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      finalConfig = { ...existing, ...config };
+      finalConfig = { ...existing };
+      
+      for (const [key, value] of Object.entries(config)) {
+        if (value === undefined) continue;
+        
+        if (typeof value === 'object' && !Array.isArray(value)) {
+          const cleanValue = Object.fromEntries(Object.entries(value).filter(([_, v]) => v !== undefined));
+          if (Object.keys(cleanValue).length > 0) {
+            finalConfig[key] = { ...(existing[key] || {}), ...cleanValue };
+          }
+        } else {
+          finalConfig[key] = value;
+        }
+      }
     } catch (e) {}
   }
   
   fs.writeFileSync(configPath, JSON.stringify(finalConfig, null, 2), 'utf8');
 }
 
-export async function promptToSaveConfig(workspacePath: string, config: AutogenConfig): Promise<void> {
-  // If config already exists and is not completely empty, we might not want to bother them,
-  // or we can silently update, but auto-saving without explicit consent initially is bad UX.
-  // We'll ask if no config exists.
-  if (fs.existsSync(getConfigPath(workspacePath))) {
-    return; // Already configured
+export async function promptToSaveConfig(workspacePath: string, config: AutogenConfig, isInteractive: boolean = false): Promise<void> {
+  const configPath = getConfigPath(workspacePath);
+  const hasConfig = fs.existsSync(configPath);
+
+  if (hasConfig && isInteractive) {
+    const overwriteOption = "Sí, sobrescribir";
+    const choice = await vscode.window.showInformationMessage(
+      "¿Deseas sobrescribir la configuración por defecto con estas nuevas opciones?",
+      overwriteOption,
+      "No"
+    );
+
+    if (choice === overwriteOption) {
+      saveConfig(workspacePath, config);
+      vscode.window.showInformationMessage('Configuración actualizada en .autogen/config.json.');
+    }
+    return;
   }
 
-  const saveOption = "Sí, guardar configuración";
+  if (hasConfig) {
+    let existing: AutogenConfig = {};
+    try {
+      existing = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    } catch(e) {}
+    
+    const hasNewKeys = Object.entries(config).some(([key, value]) => {
+      if (value === undefined) return false;
+      if (typeof value === 'object' && !Array.isArray(value)) {
+         return Object.entries(value).some(([subKey, subValue]) => {
+           return subValue !== undefined && (existing as any)[key]?.[subKey] === undefined;
+         });
+      }
+      return (existing as any)[key] === undefined;
+    });
+
+    if (!hasNewKeys) {
+      return; // Already configured and no new missing keys, so do nothing
+    }
+  }
+
+  const saveOption = hasConfig ? "Sí, actualizar configuración" : "Sí, guardar configuración";
+  const message = hasConfig 
+    ? "¿Deseas agregar estas opciones faltantes a .autogen/config.json para acelerar futuras generaciones?"
+    : "¿Quieres guardar estas opciones como predeterminadas en .autogen/config.json para acelerar futuras generaciones?";
+
   const choice = await vscode.window.showInformationMessage(
-    "¿Quieres guardar estas opciones como predeterminadas en .autogen/config.json para acelerar futuras generaciones?",
+    message,
     saveOption,
     "No por ahora"
   );
 
   if (choice === saveOption) {
     saveConfig(workspacePath, config);
-    vscode.window.showInformationMessage('Configuración guardada en .autogen/config.json. La próxima vez será instantáneo.');
+    vscode.window.showInformationMessage(
+      hasConfig ? 'Configuración actualizada en .autogen/config.json.' : 'Configuración guardada en .autogen/config.json. La próxima vez será instantáneo.'
+    );
   }
 }

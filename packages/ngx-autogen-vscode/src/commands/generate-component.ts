@@ -62,6 +62,15 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
     });
     if (!entityName) return;
 
+    let useGroupedLayout = config?.store?.useGroupedLayout;
+    if (useGroupedLayout === undefined) {
+      const groupedLayoutSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+        placeHolder: 'Use grouped layout for store? (models/ and services/ subfolders)'
+      });
+      if (!groupedLayoutSelection) return;
+      useGroupedLayout = groupedLayoutSelection === 'Yes';
+    }
+
     let primaryKey = config?.store?.primaryKey;
     if (!primaryKey) {
       primaryKey = await vscode.window.showInputBox({
@@ -91,7 +100,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
 
     storeOptions = {
       entityName,
-      useGroupedLayout: false,
+      useGroupedLayout,
       primaryKey,
       provideInRoot,
       defaultLang
@@ -144,7 +153,8 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
       },
       store: shouldGenerateStore ? {
         primaryKey: storeOptions?.primaryKey,
-        provideInRoot: storeOptions?.provideInRoot
+        provideInRoot: storeOptions?.provideInRoot,
+        useGroupedLayout: storeOptions?.useGroupedLayout
       } : undefined
     }, interactive);
   }
