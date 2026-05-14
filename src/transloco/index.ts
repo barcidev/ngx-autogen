@@ -174,7 +174,7 @@ function updateAppI18nTypeRule(options: any): Rule {
 
       // 3. Reemplazamos los placeholders por el código real (sin comillas)
       const realKey = `[${i18nConstantName}.scope]`;
-      const realValue = `${i18nConstantName}.translations['en-US'],`;
+      const realValue = `${i18nConstantName}.keys,`;
 
       newObjectStr = newObjectStr
         .replace(`"${keyPlaceholder}"`, realKey) // Limpia la llave
