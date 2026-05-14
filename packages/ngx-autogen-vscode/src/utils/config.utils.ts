@@ -34,6 +34,32 @@ export function getConfig(workspacePath: string): AutogenConfig | null {
   return null;
 }
 
+export function getDefaultLangFromProject(workspacePath: string): 'en' | 'es' | null {
+  const appConfigPath = path.join(workspacePath, 'src', 'app', 'app.config.ts');
+  if (fs.existsSync(appConfigPath)) {
+    const content = fs.readFileSync(appConfigPath, 'utf8');
+    const match = content.match(/defaultLang:\s*['"]([^'"]+)['"]/);
+    if (match && match[1]) {
+      const lang = match[1].toLowerCase();
+      if (lang.startsWith('es')) return 'es';
+      if (lang.startsWith('en')) return 'en';
+    }
+  }
+  
+  const appModulePath = path.join(workspacePath, 'src', 'app', 'app.module.ts');
+  if (fs.existsSync(appModulePath)) {
+    const content = fs.readFileSync(appModulePath, 'utf8');
+    const match = content.match(/defaultLang:\s*['"]([^'"]+)['"]/);
+    if (match && match[1]) {
+      const lang = match[1].toLowerCase();
+      if (lang.startsWith('es')) return 'es';
+      if (lang.startsWith('en')) return 'en';
+    }
+  }
+
+  return null;
+}
+
 export function saveConfig(workspacePath: string, config: AutogenConfig): void {
   const configDir = path.join(workspacePath, '.autogen');
   if (!fs.existsSync(configDir)) {

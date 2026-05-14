@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { generateComponent, ComponentOptions } from '../generators/component.generator';
 import { StoreOptions } from '../generators/store.generator';
 import { I18nOptions } from '../generators/i18n.generator';
-import { getConfig, promptToSaveConfig } from '../utils/config.utils';
+import { getConfig, promptToSaveConfig, getDefaultLangFromProject } from '../utils/config.utils';
 
 export async function generateComponentCommand(uri: vscode.Uri, interactive: boolean = false) {
   if (!uri || !uri.fsPath) {
@@ -90,6 +90,10 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
     }
 
     let defaultLang = config?.defaultLang;
+    if (!defaultLang && workspaceFolder) {
+      defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
+    }
+    
     if (!defaultLang) {
       const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
         placeHolder: 'Default language for pluralization:'
@@ -116,6 +120,10 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
     if (!scopeName) return;
 
     let defaultLang = config?.defaultLang;
+    if (!defaultLang && workspaceFolder) {
+      defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
+    }
+    
     if (!defaultLang) {
       const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
         placeHolder: 'Default language:'

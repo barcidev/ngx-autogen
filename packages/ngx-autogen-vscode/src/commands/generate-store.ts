@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { generateStore, StoreOptions } from '../generators/store.generator';
-import { getConfig, promptToSaveConfig } from '../utils/config.utils';
+import { getConfig, promptToSaveConfig, getDefaultLangFromProject } from '../utils/config.utils';
 
 export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean = false) {
   if (!uri || !uri.fsPath) {
@@ -45,6 +45,10 @@ export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean
   }
 
   let defaultLang = config?.defaultLang;
+  if (!defaultLang && workspaceFolder) {
+    defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
+  }
+  
   if (!defaultLang) {
     const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
       placeHolder: 'Default language for pluralization:'
