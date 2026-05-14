@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 export interface AutogenConfig {
   styleExt?: string;
   skipTests?: boolean;
-  defaultLang?: 'en' | 'es';
   component?: {
     generateStore?: boolean;
     generateI18n?: boolean;

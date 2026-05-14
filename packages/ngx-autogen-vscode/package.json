@@ -10,33 +10,31 @@
     "Snippets",
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "ngx-autogen.generateStore",
-        "title": "ngx-autogen: Generate Store (app-store)"
+        "title": "ngx-autogen: Generate Store"
       },
       {
         "command": "ngx-autogen.generateI18n",
-        "title": "ngx-autogen: Generate i18n Scope (app-i18n)"
+        "title": "ngx-autogen: Generate i18n Scope"
       },
       {
         "command": "ngx-autogen.generateComponent",
-        "title": "ngx-autogen: Generate Component (app-component)"
+        "title": "ngx-autogen: Generate Component"
       },
       {
         "command": "ngx-autogen.generateStoreInteractive",
-        "title": "ngx-autogen: Generate Store Interactive"
-      },
-      {
-        "command": "ngx-autogen.generateI18nInteractive",
-        "title": "ngx-autogen: Generate i18n Scope Interactive"
+        "title": "ngx-autogen: Generate Custom Store"
       },
       {
         "command": "ngx-autogen.generateComponentInteractive",
-        "title": "ngx-autogen: Generate Component Interactive"
+        "title": "ngx-autogen: Generate Custom Component"
       }
     ],
     "menus": {
@@ -62,15 +60,13 @@
         },
         {
           "command": "ngx-autogen.generateStoreInteractive",
-          "group": "2_interactive@1"
-        },
-        {
-          "command": "ngx-autogen.generateI18nInteractive",
-          "group": "2_interactive@2"
+          "group": "2_interactive@1",
+          "when": "ngx-autogen:hasConfig"
         },
         {
           "command": "ngx-autogen.generateComponentInteractive",
-          "group": "2_interactive@3"
+          "group": "2_interactive@3",
+          "when": "ngx-autogen:hasConfig"
         }
       ]
     },

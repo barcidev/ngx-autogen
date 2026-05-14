@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { generateI18n, I18nOptions } from '../generators/i18n.generator';
-import { getConfig, promptToSaveConfig, getDefaultLangFromProject } from '../utils/config.utils';
+import { getConfig, getDefaultLangFromProject } from '../utils/config.utils';
 
 export async function generateI18nCommand(uri: vscode.Uri, interactive: boolean = false) {
   if (!uri || !uri.fsPath) {
@@ -26,8 +26,8 @@ export async function generateI18nCommand(uri: vscode.Uri, interactive: boolean 
   });
   if (!scopeName) return;
 
-  let defaultLang = config?.defaultLang;
-  if (!defaultLang && workspaceFolder) {
+  let defaultLang: 'en' | 'es' | undefined;
+  if (workspaceFolder) {
     defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
   }
   
@@ -45,10 +45,4 @@ export async function generateI18nCommand(uri: vscode.Uri, interactive: boolean 
   };
 
   await generateI18n(uri.fsPath, options);
-
-  if (workspaceFolder) {
-    await promptToSaveConfig(workspaceFolder, {
-      defaultLang
-    }, interactive);
-  }
 }

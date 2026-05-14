@@ -89,8 +89,8 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
       provideInRoot = provideInRootSelection === 'Yes';
     }
 
-    let defaultLang = config?.defaultLang;
-    if (!defaultLang && workspaceFolder) {
+    let defaultLang: 'en' | 'es' | undefined;
+    if (workspaceFolder) {
       defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
     }
     
@@ -119,8 +119,8 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
     });
     if (!scopeName) return;
 
-    let defaultLang = config?.defaultLang;
-    if (!defaultLang && workspaceFolder) {
+    let defaultLang: 'en' | 'es' | undefined;
+    if (workspaceFolder) {
       defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
     }
     
@@ -154,7 +154,6 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
     await promptToSaveConfig(workspaceFolder, {
       styleExt,
       skipTests,
-      defaultLang: storeOptions?.defaultLang || i18nOptions?.defaultLang,
       component: {
         generateStore: shouldGenerateStore,
         generateI18n: shouldGenerateI18n

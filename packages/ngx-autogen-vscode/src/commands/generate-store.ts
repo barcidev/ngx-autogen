@@ -44,8 +44,8 @@ export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean
     provideInRoot = provideInRootSelection === 'Yes';
   }
 
-  let defaultLang = config?.defaultLang;
-  if (!defaultLang && workspaceFolder) {
+  let defaultLang: 'en' | 'es' | undefined;
+  if (workspaceFolder) {
     defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
   }
   
@@ -69,7 +69,6 @@ export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean
 
   if (workspaceFolder) {
     await promptToSaveConfig(workspaceFolder, {
-      defaultLang,
       store: {
         primaryKey,
         provideInRoot,
