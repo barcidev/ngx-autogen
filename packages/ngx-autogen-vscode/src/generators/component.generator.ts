@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { ensureDir, writeFileIfNotExists } from '../utils/file.utils';
 import { classify, dasherize, toSelectorName, camelize } from '../utils/string.utils';
+import { promptToInstallLibraries } from '../utils/install.utils';
 import { generateStore, StoreOptions } from './store.generator';
 import { generateI18n, I18nOptions } from './i18n.generator';
 
@@ -110,12 +111,28 @@ describe('${nameClass}Component', () => {
     writeFileIfNotExists(path.join(compDir, `${nameDash}.component.spec.ts`), specContent);
   }
 
+  const regularDeps: string[] = [];
+  const devDeps: string[] = [];
+
   if (options.generateStore && options.storeOptions) {
-    await generateStore(compDir, options.storeOptions);
+    await generateStore(compDir, { ...options.storeOptions, skipInstallPrompt: true });
+    regularDeps.push('@ngrx/signals', '@ngrx/operators');
+    devDeps.push('@barcidev/ngx-autogen');
   }
 
   if (options.generateI18n && options.i18nOptions) {
-    await generateI18n(compDir, options.i18nOptions);
+    await generateI18n(compDir, { ...options.i18nOptions, skipInstallPrompt: true });
+    regularDeps.push('@barcidev/typed-transloco');
+  }
+
+  if (regularDeps.length > 0 || devDeps.length > 0) {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (workspaceFolder) {
+      await promptToInstallLibraries(workspaceFolder, {
+        regular: regularDeps,
+        dev: devDeps
+      });
+    }
   }
 
   vscode.window.showInformationMessage(`✅ Component '${options.name}' generated successfully.`);

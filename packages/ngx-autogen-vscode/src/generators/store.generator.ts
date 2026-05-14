@@ -10,6 +10,7 @@ export interface StoreOptions {
   primaryKey: string;
   provideInRoot: boolean;
   defaultLang: 'en' | 'es';
+  skipInstallPrompt?: boolean;
 }
 
 export async function generateStore(targetPath: string, options: StoreOptions) {
@@ -106,7 +107,7 @@ import {
   ${nameClass}Dto,
   Update${nameClass}
 } from '${grouped ? "./models/" + nameDash + ".model" : "./" + nameDash + ".model"}';
-import { ${nameClass}Service } from '${grouped ? "./services/" + nameDash + ".service" : "./" + nameDash + ".service"}';;
+import { ${nameClass}Service } from '${grouped ? "./services/" + nameDash + ".service" : "./" + nameDash + ".service"}';
 
 const config = entityConfig({
   entity: type<${nameClass}Dto>(),
@@ -303,7 +304,7 @@ export const ${nameClass}Store = signalStore(
 
 export function provide${nameClass}Store() {
   return [
-    ${!isProvideInRoot ? `${nameCamel}Service,` : ''}
+    ${!isProvideInRoot ? `${nameClass}Service,` : ''}
     ${nameClass}Store,
   ];
 }
@@ -321,10 +322,14 @@ export function provide${nameClass}Store() {
   appendToBarrel(barrelPath, `export * from '${serviceExport}';`);
   appendToBarrel(barrelPath, `export * from '${storeExport}';`);
 
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  if (workspaceFolder) {
-    await promptToInstallLibraries(workspaceFolder, ['@barcidev/ngx-autogen'], true);
-    await promptToInstallLibraries(workspaceFolder, ['@ngrx/signals', '@ngrx/operators'], false);
+  if (!options.skipInstallPrompt) {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (workspaceFolder) {
+      await promptToInstallLibraries(workspaceFolder, {
+        dev: ['@barcidev/ngx-autogen'],
+        regular: ['@ngrx/signals', '@ngrx/operators']
+      });
+    }
   }
 
   vscode.window.showInformationMessage(`✅ Store '${name}' generated successfully.`);

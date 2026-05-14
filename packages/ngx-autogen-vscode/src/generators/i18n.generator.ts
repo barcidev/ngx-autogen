@@ -8,6 +8,7 @@ import { promptToInstallLibraries } from '../utils/install.utils';
 export interface I18nOptions {
   scopeName: string;
   defaultLang: 'en' | 'es';
+  skipInstallPrompt?: boolean;
 }
 
 export async function generateI18n(targetPath: string, options: I18nOptions) {
@@ -55,9 +56,13 @@ export const ${nameCamel}I18n = TranslocoUtils.createScopeConfig('${nameCamel}',
     }
   }
 
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  if (workspaceFolder) {
-    await promptToInstallLibraries(workspaceFolder, ['@barcidev/typed-transloco'], false);
+  if (!options.skipInstallPrompt) {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (workspaceFolder) {
+      await promptToInstallLibraries(workspaceFolder, {
+        regular: ['@barcidev/typed-transloco']
+      });
+    }
   }
 
   vscode.window.showInformationMessage(`✅ i18n scope '${name}' generated successfully.`);
