@@ -323,7 +323,7 @@ export function provide${nameClass}Store() {
   appendToBarrel(barrelPath, `export * from '${storeExport}';`);
 
   if (!options.skipInstallPrompt) {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(targetPath))?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (workspaceFolder) {
       await promptToInstallLibraries(workspaceFolder, {
         dev: ['@barcidev/ngx-autogen'],

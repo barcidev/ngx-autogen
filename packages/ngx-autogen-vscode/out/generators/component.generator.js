@@ -38,6 +38,7 @@ const path = __importStar(require("path"));
 const vscode = __importStar(require("vscode"));
 const file_utils_1 = require("../utils/file.utils");
 const string_utils_1 = require("../utils/string.utils");
+const install_utils_1 = require("../utils/install.utils");
 const store_generator_1 = require("./store.generator");
 const i18n_generator_1 = require("./i18n.generator");
 async function generateComponent(targetPath, options) {
@@ -122,11 +123,25 @@ describe('${nameClass}Component', () => {
 `;
         (0, file_utils_1.writeFileIfNotExists)(path.join(compDir, `${nameDash}.component.spec.ts`), specContent);
     }
+    const regularDeps = [];
+    const devDeps = [];
     if (options.generateStore && options.storeOptions) {
-        await (0, store_generator_1.generateStore)(compDir, options.storeOptions);
+        await (0, store_generator_1.generateStore)(compDir, { ...options.storeOptions, skipInstallPrompt: true });
+        regularDeps.push('@ngrx/signals', '@ngrx/operators');
+        devDeps.push('@barcidev/ngx-autogen');
     }
     if (options.generateI18n && options.i18nOptions) {
-        await (0, i18n_generator_1.generateI18n)(compDir, options.i18nOptions);
+        await (0, i18n_generator_1.generateI18n)(compDir, { ...options.i18nOptions, skipInstallPrompt: true });
+        regularDeps.push('@barcidev/typed-transloco');
+    }
+    if (regularDeps.length > 0 || devDeps.length > 0) {
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(targetPath))?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (workspaceFolder) {
+            await (0, install_utils_1.promptToInstallLibraries)(workspaceFolder, {
+                regular: regularDeps,
+                dev: devDeps
+            });
+        }
     }
     vscode.window.showInformationMessage(`✅ Component '${options.name}' generated successfully.`);
 }

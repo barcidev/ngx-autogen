@@ -1,10 +1,10 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ensureDir, writeFileIfNotExists } from '../utils/file.utils';
-import { classify, dasherize, toSelectorName, camelize } from '../utils/string.utils';
 import { promptToInstallLibraries } from '../utils/install.utils';
-import { generateStore, StoreOptions } from './store.generator';
+import { camelize, classify, dasherize, toSelectorName } from '../utils/string.utils';
 import { generateI18n, I18nOptions } from './i18n.generator';
+import { generateStore, StoreOptions } from './store.generator';
 
 export interface ComponentOptions {
   name: string;
@@ -20,7 +20,7 @@ export async function generateComponent(targetPath: string, options: ComponentOp
   const nameDash = dasherize(options.name);
   const nameClass = classify(options.name);
   const selectorName = toSelectorName(options.name);
-  
+
   const compDir = path.join(targetPath, nameDash);
   ensureDir(compDir);
 
@@ -34,24 +34,24 @@ export async function generateComponent(targetPath: string, options: ComponentOp
     const storeClass = classify(options.storeOptions.entityName);
     const storeVar = camelize(options.storeOptions.entityName);
     const storeDash = dasherize(options.storeOptions.entityName);
-    
+
     imports += `import { ${storeClass}Store${!options.storeOptions.provideInRoot ? `, provide${storeClass}Store` : ''} } from './state/${storeDash}/${storeDash}.store';\n`;
-    
+
     if (!options.storeOptions.provideInRoot) {
       providers += `\n    ...provide${storeClass}Store(),`;
     }
-    
-    classProperties += `  private readonly _${storeVar}Store = inject(${storeClass}Store);\n  readonly data$ = this._${storeVar}Store.entities();\n\n`;
+
+    classProperties += `  private readonly _${storeVar}Store = inject(${storeClass}Store);\n  readonly data$ = this._${storeVar}Store.entities;\n\n`;
   }
 
   if (options.generateI18n && options.i18nOptions) {
     const i18nVar = camelize(options.i18nOptions.scopeName);
     const i18nDash = dasherize(options.i18nOptions.scopeName);
-    
+
     imports += `import { TypedTranslocoDirective, provideTranslocoScopeWrapper } from '@barcidev/typed-transloco';\nimport { ${i18nVar}I18n } from './${i18nDash}.i18n';\n`;
     componentImports += `, TypedTranslocoDirective`;
     providers += `\n    provideTranslocoScopeWrapper(${i18nVar}I18n),`;
-    
+
     templateContent = `<div *typedTransloco="let t; prefix: '${i18nVar}'">
   <h1>{{ t('title') }}</h1>
 ${options.generateStore ? '  <pre>{{ data$() | json }}</pre>\n' : ''}</div>\n`;
@@ -126,7 +126,7 @@ describe('${nameClass}Component', () => {
   }
 
   if (regularDeps.length > 0 || devDeps.length > 0) {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(targetPath))?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (workspaceFolder) {
       await promptToInstallLibraries(workspaceFolder, {
         regular: regularDeps,

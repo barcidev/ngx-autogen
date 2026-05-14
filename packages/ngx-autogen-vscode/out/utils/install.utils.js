@@ -37,8 +37,9 @@ exports.promptToInstallLibraries = promptToInstallLibraries;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-async function promptToInstallLibraries(workspacePath, libraries, dev = true) {
-    const missingLibraries = [];
+async function promptToInstallLibraries(workspacePath, config) {
+    const missingRegular = [];
+    const missingDev = [];
     const packageJsonPath = path.join(workspacePath, 'package.json');
     let allDeps = {};
     if (fs.existsSync(packageJsonPath)) {
@@ -50,22 +51,43 @@ async function promptToInstallLibraries(workspacePath, libraries, dev = true) {
             // Ignore parse error
         }
     }
-    for (const lib of libraries) {
-        if (!allDeps[lib]) {
-            missingLibraries.push(lib);
+    if (config.regular) {
+        for (const lib of config.regular) {
+            if (!allDeps[lib]) {
+                missingRegular.push(lib);
+            }
         }
     }
-    if (missingLibraries.length === 0) {
+    if (config.dev) {
+        for (const lib of config.dev) {
+            if (!allDeps[lib]) {
+                missingDev.push(lib);
+            }
+        }
+    }
+    if (missingRegular.length === 0 && missingDev.length === 0) {
         return;
     }
-    const libsString = missingLibraries.join(' ');
+    const libsToInstall = [...missingRegular, ...missingDev].join(' ');
     const installOption = "Install (npm)";
-    const choice = await vscode.window.showInformationMessage(`⚠️ Some generated files require dependencies. Install ${libsString}?`, installOption, "Skip");
+    const choice = await vscode.window.showInformationMessage(`⚠️ Some generated files require dependencies. Install ${libsToInstall}?`, installOption, "Skip");
     if (choice === installOption) {
-        const terminal = vscode.window.createTerminal("ngx-autogen install");
+        const terminalName = "ngx-autogen install";
+        const terminal = vscode.window.terminals.find(t => t.name === terminalName) || vscode.window.createTerminal(terminalName);
         terminal.show();
-        const saveFlag = dev ? '--save-dev' : '--save';
-        terminal.sendText(`npm install ${libsString} ${saveFlag}`);
+        let command = '';
+        if (missingRegular.length > 0) {
+            command += `npm install ${missingRegular.join(' ')} --save`;
+        }
+        if (missingDev.length > 0) {
+            if (command) {
+                command += ' && ';
+            }
+            command += `npm install ${missingDev.join(' ')} --save-dev`;
+        }
+        if (command) {
+            terminal.sendText(command);
+        }
     }
 }
 //# sourceMappingURL=install.utils.js.map

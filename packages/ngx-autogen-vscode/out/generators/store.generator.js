@@ -37,8 +37,8 @@ exports.generateStore = generateStore;
 const path = __importStar(require("path"));
 const vscode = __importStar(require("vscode"));
 const file_utils_1 = require("../utils/file.utils");
-const string_utils_1 = require("../utils/string.utils");
 const install_utils_1 = require("../utils/install.utils");
+const string_utils_1 = require("../utils/string.utils");
 async function generateStore(targetPath, options) {
     const { entityName: name, useGroupedLayout: grouped, primaryKey: pk, provideInRoot: isProvideInRoot, defaultLang: lang } = options;
     const nameDash = (0, string_utils_1.dasherize)(name);
@@ -125,7 +125,7 @@ import {
   ${nameClass}Dto,
   Update${nameClass}
 } from '${grouped ? "./models/" + nameDash + ".model" : "./" + nameDash + ".model"}';
-import { ${nameClass}Service } from '${grouped ? "./services/" + nameDash + ".service" : "./" + nameDash + ".service"}';;
+import { ${nameClass}Service } from '${grouped ? "./services/" + nameDash + ".service" : "./" + nameDash + ".service"}';
 
 const config = entityConfig({
   entity: type<${nameClass}Dto>(),
@@ -322,7 +322,7 @@ export const ${nameClass}Store = signalStore(
 
 export function provide${nameClass}Store() {
   return [
-    ${!isProvideInRoot ? nameCamel + 'Service,' : ''}
+    ${!isProvideInRoot ? `${nameClass}Service,` : ''}
     ${nameClass}Store,
   ];
 }
@@ -336,10 +336,14 @@ export function provide${nameClass}Store() {
     (0, file_utils_1.appendToBarrel)(barrelPath, `export * from '${modelExport}';`);
     (0, file_utils_1.appendToBarrel)(barrelPath, `export * from '${serviceExport}';`);
     (0, file_utils_1.appendToBarrel)(barrelPath, `export * from '${storeExport}';`);
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (workspaceFolder) {
-        await (0, install_utils_1.promptToInstallLibraries)(workspaceFolder, ['@barcidev/ngx-autogen'], true);
-        await (0, install_utils_1.promptToInstallLibraries)(workspaceFolder, ['@ngrx/signals', '@ngrx/operators'], false);
+    if (!options.skipInstallPrompt) {
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(targetPath))?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (workspaceFolder) {
+            await (0, install_utils_1.promptToInstallLibraries)(workspaceFolder, {
+                dev: ['@barcidev/ngx-autogen'],
+                regular: ['@ngrx/signals', '@ngrx/operators']
+            });
+        }
     }
     vscode.window.showInformationMessage(`✅ Store '${name}' generated successfully.`);
 }
