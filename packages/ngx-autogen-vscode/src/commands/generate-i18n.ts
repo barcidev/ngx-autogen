@@ -1,12 +1,16 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { generateI18n, I18nOptions } from '../generators/i18n.generator';
+import { getConfig, promptToSaveConfig } from '../utils/config.utils';
 
-export async function generateI18nCommand(uri: vscode.Uri) {
+export async function generateI18nCommand(uri: vscode.Uri, interactive: boolean = false) {
   if (!uri || !uri.fsPath) {
     vscode.window.showErrorMessage('No folder selected');
     return;
   }
+
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri)?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  const config = (!interactive && workspaceFolder) ? getConfig(workspaceFolder) : null;
 
   let defaultScopeName = '';
   const files = fs.readdirSync(uri.fsPath);
@@ -22,11 +26,14 @@ export async function generateI18nCommand(uri: vscode.Uri) {
   });
   if (!scopeName) return;
 
-  const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
-    placeHolder: 'Default language:'
-  });
-  if (!defaultLangSelection) return;
-  const defaultLang = defaultLangSelection as 'en' | 'es';
+  let defaultLang = config?.defaultLang;
+  if (!defaultLang) {
+    const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
+      placeHolder: 'Default language:'
+    });
+    if (!defaultLangSelection) return;
+    defaultLang = defaultLangSelection as 'en' | 'es';
+  }
 
   const options: I18nOptions = {
     scopeName,
@@ -34,4 +41,10 @@ export async function generateI18nCommand(uri: vscode.Uri) {
   };
 
   await generateI18n(uri.fsPath, options);
+
+  if (workspaceFolder && !config && !interactive) {
+    await promptToSaveConfig(workspaceFolder, {
+      defaultLang
+    });
+  }
 }

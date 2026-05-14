@@ -37,10 +37,10 @@ exports.generateComponent = generateComponent;
 const path = __importStar(require("path"));
 const vscode = __importStar(require("vscode"));
 const file_utils_1 = require("../utils/file.utils");
-const string_utils_1 = require("../utils/string.utils");
 const install_utils_1 = require("../utils/install.utils");
-const store_generator_1 = require("./store.generator");
+const string_utils_1 = require("../utils/string.utils");
 const i18n_generator_1 = require("./i18n.generator");
+const store_generator_1 = require("./store.generator");
 async function generateComponent(targetPath, options) {
     const nameDash = (0, string_utils_1.dasherize)(options.name);
     const nameClass = (0, string_utils_1.classify)(options.name);
@@ -60,7 +60,7 @@ async function generateComponent(targetPath, options) {
         if (!options.storeOptions.provideInRoot) {
             providers += `\n    ...provide${storeClass}Store(),`;
         }
-        classProperties += `  private readonly _${storeVar}Store = inject(${storeClass}Store);\n  readonly data$ = this._${storeVar}Store.entities();\n\n`;
+        classProperties += `  private readonly _${storeVar}Store = inject(${storeClass}Store);\n  readonly data$ = this._${storeVar}Store.entities;\n\n`;
     }
     if (options.generateI18n && options.i18nOptions) {
         const i18nVar = (0, string_utils_1.camelize)(options.i18nOptions.scopeName);

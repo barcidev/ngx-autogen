@@ -40,10 +40,13 @@ const generate_store_1 = require("./commands/generate-store");
 const generate_i18n_1 = require("./commands/generate-i18n");
 const generate_component_1 = require("./commands/generate-component");
 function activate(context) {
-    const storeDisposable = vscode.commands.registerCommand('ngx-autogen.generateStore', generate_store_1.generateStoreCommand);
-    const i18nDisposable = vscode.commands.registerCommand('ngx-autogen.generateI18n', generate_i18n_1.generateI18nCommand);
-    const componentDisposable = vscode.commands.registerCommand('ngx-autogen.generateComponent', generate_component_1.generateComponentCommand);
-    context.subscriptions.push(storeDisposable, i18nDisposable, componentDisposable);
+    const storeDisposable = vscode.commands.registerCommand('ngx-autogen.generateStore', (uri) => (0, generate_store_1.generateStoreCommand)(uri, false));
+    const i18nDisposable = vscode.commands.registerCommand('ngx-autogen.generateI18n', (uri) => (0, generate_i18n_1.generateI18nCommand)(uri, false));
+    const componentDisposable = vscode.commands.registerCommand('ngx-autogen.generateComponent', (uri) => (0, generate_component_1.generateComponentCommand)(uri, false));
+    const storeInteractiveDisposable = vscode.commands.registerCommand('ngx-autogen.generateStoreInteractive', (uri) => (0, generate_store_1.generateStoreCommand)(uri, true));
+    const i18nInteractiveDisposable = vscode.commands.registerCommand('ngx-autogen.generateI18nInteractive', (uri) => (0, generate_i18n_1.generateI18nCommand)(uri, true));
+    const componentInteractiveDisposable = vscode.commands.registerCommand('ngx-autogen.generateComponentInteractive', (uri) => (0, generate_component_1.generateComponentCommand)(uri, true));
+    context.subscriptions.push(storeDisposable, i18nDisposable, componentDisposable, storeInteractiveDisposable, i18nInteractiveDisposable, componentInteractiveDisposable);
 }
 function deactivate() { }
 //# sourceMappingURL=extension.js.map

@@ -1,6 +1,6 @@
 {
   "name": "ngx-autogen-vscode",
-  "displayName": "ngx-autogen",
+  "displayName": "Ngx Autogen",
   "description": "Generate NgRx Signal Store, Transloco i18n scopes and Angular components from the context menu",
   "version": "0.0.1",
   "engines": {
@@ -25,6 +25,18 @@
       {
         "command": "ngx-autogen.generateComponent",
         "title": "ngx-autogen: Generate Component (app-component)"
+      },
+      {
+        "command": "ngx-autogen.generateStoreInteractive",
+        "title": "ngx-autogen: Generate Store Interactive"
+      },
+      {
+        "command": "ngx-autogen.generateI18nInteractive",
+        "title": "ngx-autogen: Generate i18n Scope Interactive"
+      },
+      {
+        "command": "ngx-autogen.generateComponentInteractive",
+        "title": "ngx-autogen: Generate Component Interactive"
       }
     ],
     "menus": {
@@ -38,22 +50,34 @@
       "ngx-autogen.submenu": [
         {
           "command": "ngx-autogen.generateStore",
-          "group": "1_generate"
+          "group": "1_generate@1"
         },
         {
           "command": "ngx-autogen.generateI18n",
-          "group": "1_generate"
+          "group": "1_generate@2"
         },
         {
           "command": "ngx-autogen.generateComponent",
-          "group": "1_generate"
+          "group": "1_generate@3"
+        },
+        {
+          "command": "ngx-autogen.generateStoreInteractive",
+          "group": "2_interactive@1"
+        },
+        {
+          "command": "ngx-autogen.generateI18nInteractive",
+          "group": "2_interactive@2"
+        },
+        {
+          "command": "ngx-autogen.generateComponentInteractive",
+          "group": "2_interactive@3"
         }
       ]
     },
     "submenus": [
       {
         "id": "ngx-autogen.submenu",
-        "label": "ngx-autogen"
+        "label": "Ngx Autogen"
       }
     ]
   },

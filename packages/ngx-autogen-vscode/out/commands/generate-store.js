@@ -36,11 +36,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateStoreCommand = generateStoreCommand;
 const vscode = __importStar(require("vscode"));
 const store_generator_1 = require("../generators/store.generator");
-async function generateStoreCommand(uri) {
+const config_utils_1 = require("../utils/config.utils");
+async function generateStoreCommand(uri, interactive = false) {
     if (!uri || !uri.fsPath) {
         vscode.window.showErrorMessage('No folder selected');
         return;
     }
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri)?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const config = (!interactive && workspaceFolder) ? (0, config_utils_1.getConfig)(workspaceFolder) : null;
     const entityName = await vscode.window.showInputBox({
         prompt: 'Entity name (e.g. product, invoice):',
         validateInput: text => text ? null : 'Entity name is required'
@@ -53,24 +56,33 @@ async function generateStoreCommand(uri) {
     if (!groupedLayoutSelection)
         return;
     const useGroupedLayout = groupedLayoutSelection === 'Yes';
-    const primaryKey = await vscode.window.showInputBox({
-        prompt: 'Primary key field name:',
-        value: 'id'
-    });
-    if (!primaryKey)
-        return;
-    const provideInRootSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
-        placeHolder: "Provide in root? (providedIn: 'root')"
-    });
-    if (!provideInRootSelection)
-        return;
-    const provideInRoot = provideInRootSelection === 'Yes';
-    const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
-        placeHolder: 'Default language for pluralization:'
-    });
-    if (!defaultLangSelection)
-        return;
-    const defaultLang = defaultLangSelection;
+    let primaryKey = config?.store?.primaryKey;
+    if (!primaryKey) {
+        primaryKey = await vscode.window.showInputBox({
+            prompt: 'Primary key field name:',
+            value: 'id'
+        });
+        if (!primaryKey)
+            return;
+    }
+    let provideInRoot = config?.store?.provideInRoot;
+    if (provideInRoot === undefined) {
+        const provideInRootSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+            placeHolder: "Provide in root? (providedIn: 'root')"
+        });
+        if (!provideInRootSelection)
+            return;
+        provideInRoot = provideInRootSelection === 'Yes';
+    }
+    let defaultLang = config?.defaultLang;
+    if (!defaultLang) {
+        const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
+            placeHolder: 'Default language for pluralization:'
+        });
+        if (!defaultLangSelection)
+            return;
+        defaultLang = defaultLangSelection;
+    }
     const options = {
         entityName,
         useGroupedLayout,
@@ -79,5 +91,14 @@ async function generateStoreCommand(uri) {
         defaultLang
     };
     await (0, store_generator_1.generateStore)(uri.fsPath, options);
+    if (workspaceFolder && !config && !interactive) {
+        await (0, config_utils_1.promptToSaveConfig)(workspaceFolder, {
+            defaultLang,
+            store: {
+                primaryKey,
+                provideInRoot
+            }
+        });
+    }
 }
 //# sourceMappingURL=generate-store.js.map

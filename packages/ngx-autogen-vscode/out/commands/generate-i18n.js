@@ -37,11 +37,14 @@ exports.generateI18nCommand = generateI18nCommand;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const i18n_generator_1 = require("../generators/i18n.generator");
-async function generateI18nCommand(uri) {
+const config_utils_1 = require("../utils/config.utils");
+async function generateI18nCommand(uri, interactive = false) {
     if (!uri || !uri.fsPath) {
         vscode.window.showErrorMessage('No folder selected');
         return;
     }
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri)?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const config = (!interactive && workspaceFolder) ? (0, config_utils_1.getConfig)(workspaceFolder) : null;
     let defaultScopeName = '';
     const files = fs.readdirSync(uri.fsPath);
     const componentFile = files.find(f => f.endsWith('.component.ts'));
@@ -55,16 +58,24 @@ async function generateI18nCommand(uri) {
     });
     if (!scopeName)
         return;
-    const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
-        placeHolder: 'Default language:'
-    });
-    if (!defaultLangSelection)
-        return;
-    const defaultLang = defaultLangSelection;
+    let defaultLang = config?.defaultLang;
+    if (!defaultLang) {
+        const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
+            placeHolder: 'Default language:'
+        });
+        if (!defaultLangSelection)
+            return;
+        defaultLang = defaultLangSelection;
+    }
     const options = {
         scopeName,
         defaultLang
     };
     await (0, i18n_generator_1.generateI18n)(uri.fsPath, options);
+    if (workspaceFolder && !config && !interactive) {
+        await (0, config_utils_1.promptToSaveConfig)(workspaceFolder, {
+            defaultLang
+        });
+    }
 }
 //# sourceMappingURL=generate-i18n.js.map
