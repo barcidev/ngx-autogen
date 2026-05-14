@@ -56,7 +56,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
 
   let storeOptions: StoreOptions | undefined;
   if (shouldGenerateStore) {
-    const entityName = config ? name : await vscode.window.showInputBox({
+    const entityName = await vscode.window.showInputBox({
       prompt: 'Entity store name (default = component name):',
       value: name
     });
@@ -100,7 +100,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
 
   let i18nOptions: I18nOptions | undefined;
   if (shouldGenerateI18n) {
-    const scopeName = config ? name : await vscode.window.showInputBox({
+    const scopeName = await vscode.window.showInputBox({
       prompt: 'Scope name:',
       value: name
     });
@@ -133,7 +133,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
 
   await generateComponent(uri.fsPath, options);
 
-  if (workspaceFolder && !config && !interactive) {
+  if (workspaceFolder) {
     await promptToSaveConfig(workspaceFolder, {
       styleExt,
       skipTests,
@@ -146,6 +146,6 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
         primaryKey: storeOptions?.primaryKey,
         provideInRoot: storeOptions?.provideInRoot
       } : undefined
-    });
+    }, interactive);
   }
 }
