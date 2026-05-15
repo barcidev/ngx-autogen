@@ -106,39 +106,80 @@ export function provideI18nStore() {
   ];
 }
 `;
-const LANG_SWITCH_COMPONENT_CONTENT = (storeImportPath) => `import { Component, inject } from '@angular/core';
+const LANG_SELECTOR_HTML_CONTENT = `<select 
+  [value]="store.i18nSeleccionado()?.id" 
+  (change)="onLangChange($event)"
+  class="lang-select"
+>
+  @for (lang of store.entities(); track lang.id) {
+    <option [value]="lang.id">{{ lang.name }}</option>
+  }
+</select>
+`;
+const LANG_SELECTOR_CSS_CONTENT = `.lang-select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+}
+`;
+const LANG_SELECTOR_SPEC_CONTENT = `import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LangSelectorComponent } from './lang-selector.component';
+import { provideTransloco } from '@barcidev/typed-transloco';
+
+describe('LangSelectorComponent', () => {
+  let component: LangSelectorComponent;
+  let fixture: ComponentFixture<LangSelectorComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LangSelectorComponent],
+      providers: [
+        provideTransloco({
+          config: {
+            availableLangs: ['en-US', 'es-CO'],
+            defaultLang: 'es-CO',
+          },
+          loader: {} as any
+        })
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(LangSelectorComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+`;
+const LANG_SELECTOR_COMPONENT_CONTENT = (storeImportPath) => `import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslocoService } from '@jsverse/transloco';
 import { I18nStore } from '${storeImportPath}';
 
 @Component({
-  selector: 'app-lang-switch',
+  selector: 'app-lang-selector',
   standalone: true,
   imports: [CommonModule],
-  template: \`
-    <div class="flex gap-4 p-2">
-      @for (lang of store.entities(); track lang.id) {
-        <button
-          class="px-3 py-1 rounded transition-colors border border-transparent"
-          [class.bg-blue-600]="store.i18nSeleccionado()?.code === lang.code"
-          [class.text-white]="store.i18nSeleccionado()?.code === lang.code"
-          [class.bg-gray-100]="store.i18nSeleccionado()?.code !== lang.code"
-          [class.hover:bg-gray-200]="store.i18nSeleccionado()?.code !== lang.code"
-          (click)="changeLang(lang)"
-        >
-          {{ lang.name }}
-        </button>
-      }
-    </div>
-  \`,
+  templateUrl: './lang-selector.component.html',
+  styleUrl: './lang-selector.component.css'
 })
-export class LangSwitchComponent {
+export class LangSelectorComponent {
   readonly store = inject(I18nStore);
   private readonly translocoService = inject(TranslocoService);
 
-  changeLang(lang: any) {
-    this.translocoService.setActiveLang(lang.code);
-    this.store.selectI18n(lang.id);
+  onLangChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const id = Number(select.value);
+    const lang = this.store.entities().find(e => e.id === id);
+    if (lang) {
+      this.translocoService.setActiveLang(lang.code);
+      this.store.selectI18n(lang.id);
+    }
   }
 }
 `;
@@ -248,16 +289,19 @@ declare module '@barcidev/typed-transloco' {
         // Create i18n.store.ts
         const storePath = path.join(i18nDir, 'i18n.store.ts');
         fs.writeFileSync(storePath, I18N_STORE_CONTENT, 'utf8');
-        // Create LangSwitchComponent
-        const sharedCompDir = path.join(workspaceFolder, 'src', 'app', 'shared', 'components');
+        // Create LangSelectorComponent folder
+        const sharedCompDir = path.join(workspaceFolder, 'src', 'app', 'shared', 'components', 'lang-selector');
         fs.mkdirSync(sharedCompDir, { recursive: true });
-        const switchCompPath = path.join(sharedCompDir, 'lang-switch.component.ts');
+        const selectorCompPath = path.join(sharedCompDir, 'lang-selector.component.ts');
         // Calculate relative path to store
         let relStorePath = path.relative(sharedCompDir, storePath).replace(/\\/g, '/').replace(/\.ts$/, '');
         if (!relStorePath.startsWith('.')) {
             relStorePath = './' + relStorePath;
         }
-        fs.writeFileSync(switchCompPath, LANG_SWITCH_COMPONENT_CONTENT(relStorePath), 'utf8');
+        fs.writeFileSync(selectorCompPath, LANG_SELECTOR_COMPONENT_CONTENT(relStorePath), 'utf8');
+        fs.writeFileSync(path.join(sharedCompDir, 'lang-selector.component.html'), LANG_SELECTOR_HTML_CONTENT, 'utf8');
+        fs.writeFileSync(path.join(sharedCompDir, 'lang-selector.component.css'), LANG_SELECTOR_CSS_CONTENT, 'utf8');
+        fs.writeFileSync(path.join(sharedCompDir, 'lang-selector.component.spec.ts'), LANG_SELECTOR_SPEC_CONTENT, 'utf8');
     }
     let content = fs.readFileSync(appI18nPath, 'utf8');
     const constName = `${nameCamel}I18n`;
