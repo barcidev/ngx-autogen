@@ -11,6 +11,110 @@ export interface I18nOptions {
   skipInstallPrompt?: boolean;
 }
 
+const I18N_STORE_CONTENT = `import { computed } from '@angular/core';
+import { patchState, signalStore, type, withComputed, withHooks, withMethods } from '@ngrx/signals';
+import {
+  addEntities,
+  entityConfig,
+  EntityId,
+  withEntities
+} from '@ngrx/signals/entities';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { pipe, tap } from 'rxjs';
+
+import { withEntityStatus, withPagination } from '@barcidev/ngx-autogen/entity';
+import { I18nDto } from './app.i18n';
+
+const config = entityConfig({
+  entity: type<I18nDto>(),
+  selectId: (entity) => entity.id,
+});
+
+export const I18nStore = signalStore(
+  {providedIn: 'root'},
+  withEntities(config),
+  withEntityStatus(),
+  withPagination(),
+  withComputed(({ entityMap, status: { idSelected } }) => ({
+    i18nSeleccionado: computed(() => {
+      const id = idSelected();
+      return id ? entityMap()[id] : null;
+    })
+  })),
+  withMethods((store) => ({
+    selectI18n: rxMethod<EntityId | null>(
+      pipe(
+        tap((payload) => {
+          patchState(store, (state) => ({
+            status: {
+              ...state.status,
+              idSelected: payload
+            }
+          }));
+        })
+      )
+    ),
+  })),
+  withHooks({
+    onInit(store) {
+      patchState(
+        store,
+        addEntities(
+          [
+            { id: 1, code: 'es-CO', name: 'Español' },
+            { id: 2, code: 'en-US', name: 'English' },
+          ],
+          config
+        )
+      );
+    },
+  })
+);
+
+export function provideI18nStore() {
+  return [
+    I18nStore,
+  ];
+}
+`;
+
+const LANG_SWITCH_COMPONENT_CONTENT = (storeImportPath: string) => `import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslocoService } from '@jsverse/transloco';
+import { I18nStore } from '${storeImportPath}';
+
+@Component({
+  selector: 'app-lang-switch',
+  standalone: true,
+  imports: [CommonModule],
+  template: \`
+    <div class="flex gap-4 p-2">
+      @for (lang of store.entities(); track lang.id) {
+        <button
+          class="px-3 py-1 rounded transition-colors border border-transparent"
+          [class.bg-blue-600]="store.i18nSeleccionado()?.code === lang.code"
+          [class.text-white]="store.i18nSeleccionado()?.code === lang.code"
+          [class.bg-gray-100]="store.i18nSeleccionado()?.code !== lang.code"
+          [class.hover:bg-gray-200]="store.i18nSeleccionado()?.code !== lang.code"
+          (click)="changeLang(lang)"
+        >
+          {{ lang.name }}
+        </button>
+      }
+    </div>
+  \`,
+})
+export class LangSwitchComponent {
+  readonly store = inject(I18nStore);
+  private readonly translocoService = inject(TranslocoService);
+
+  changeLang(lang: any) {
+    this.translocoService.setActiveLang(lang.code);
+    this.store.selectI18n(lang.id);
+  }
+}
+`;
+
 export async function generateI18n(targetPath: string, options: I18nOptions) {
   const { scopeName: name } = options;
   const nameDash = dasherize(name);
@@ -71,8 +175,16 @@ export const ${nameCamel}I18n = TranslocoUtils.createScopeConfig('${nameCamel}',
   if (!options.skipInstallPrompt) {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(targetPath))?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (workspaceFolder) {
+      const i18nFiles = await vscode.workspace.findFiles('**/app.i18n.ts', '**/node_modules/**');
+      const isFirstTime = i18nFiles.length === 0;
+
+      const regular = ['@barcidev/typed-transloco'];
+      if (isFirstTime) {
+        regular.push('@ngrx/signals');
+      }
+
       await promptToInstallLibraries(workspaceFolder, {
-        regular: ['@barcidev/typed-transloco']
+        regular
       });
     }
   }
@@ -111,12 +223,34 @@ async function updateAppI18n(i18nPath: string, nameCamel: string, workspaceFolde
 };
 export type AppI18nType = typeof appI18n;
 export type AppLanguageCode = 'en-US' | 'es-CO';
+export interface I18nDto {
+  id: number;
+  code: AppLanguageCode;
+  name: string;
+}
 
 declare module '@barcidev/typed-transloco' {
   export interface AppTranslations extends AppI18nType {}
 }
 `;
     fs.writeFileSync(appI18nPath, initialContent, 'utf8');
+
+    // Create i18n.store.ts
+    const storePath = path.join(i18nDir, 'i18n.store.ts');
+    fs.writeFileSync(storePath, I18N_STORE_CONTENT, 'utf8');
+
+    // Create LangSwitchComponent
+    const sharedCompDir = path.join(workspaceFolder, 'src', 'app', 'shared', 'components');
+    fs.mkdirSync(sharedCompDir, { recursive: true });
+    const switchCompPath = path.join(sharedCompDir, 'lang-switch.component.ts');
+    
+    // Calculate relative path to store
+    let relStorePath = path.relative(sharedCompDir, storePath).replace(/\\/g, '/').replace(/\.ts$/, '');
+    if (!relStorePath.startsWith('.')) {
+      relStorePath = './' + relStorePath;
+    }
+    
+    fs.writeFileSync(switchCompPath, LANG_SWITCH_COMPONENT_CONTENT(relStorePath), 'utf8');
   }
 
   let content = fs.readFileSync(appI18nPath, 'utf8');
