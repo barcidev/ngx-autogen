@@ -2,13 +2,30 @@
   "name": "ngx-autogen-vscode",
   "displayName": "Ngx Autogen",
   "description": "Generate NgRx Signal Store, Transloco i18n scopes and Angular components from the context menu",
+  "publisher": "JorgePalacioBarcinilla",
+  "author": "Jorge Palacio Barcinilla",
+  "license": "MIT",
+  "icon": "logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jpalacio09/ngx-autogen.git"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
-    "Snippets",
-    "Other"
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "angular",
+    "ngrx",
+    "signals",
+    "transloco",
+    "i18n",
+    "schematics",
+    "autogen"
   ],
   "activationEvents": [
     "onStartupFinished"
