@@ -89,8 +89,8 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
       provideInRoot = provideInRootSelection === 'Yes';
     }
 
-    let defaultLang: 'en' | 'es' | undefined;
-    if (workspaceFolder) {
+    let defaultLang: 'en' | 'es' | undefined = config?.store?.pluralizationLang;
+    if (!defaultLang && workspaceFolder) {
       defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
     }
     
@@ -161,7 +161,8 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
       store: shouldGenerateStore ? {
         primaryKey: storeOptions?.primaryKey,
         provideInRoot: storeOptions?.provideInRoot,
-        useGroupedLayout: storeOptions?.useGroupedLayout
+        useGroupedLayout: storeOptions?.useGroupedLayout,
+        pluralizationLang: storeOptions?.defaultLang
       } : undefined
     }, interactive);
   }

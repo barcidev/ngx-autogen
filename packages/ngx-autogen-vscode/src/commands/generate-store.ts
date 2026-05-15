@@ -44,8 +44,8 @@ export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean
     provideInRoot = provideInRootSelection === 'Yes';
   }
 
-  let defaultLang: 'en' | 'es' | undefined;
-  if (workspaceFolder) {
+  let defaultLang: 'en' | 'es' | undefined = config?.store?.pluralizationLang;
+  if (!defaultLang && workspaceFolder) {
     defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
   }
   
@@ -72,7 +72,8 @@ export async function generateStoreCommand(uri: vscode.Uri, interactive: boolean
       store: {
         primaryKey,
         provideInRoot,
-        useGroupedLayout
+        useGroupedLayout,
+        pluralizationLang: defaultLang
       }
     }, interactive);
   }

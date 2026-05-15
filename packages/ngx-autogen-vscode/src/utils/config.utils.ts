@@ -13,6 +13,7 @@ export interface AutogenConfig {
     primaryKey?: string;
     provideInRoot?: boolean;
     useGroupedLayout?: boolean;
+    pluralizationLang?: 'en' | 'es';
   };
 }
 
