@@ -78,6 +78,59 @@ export function provideI18nStore() {
 }
 `;
 
+const LANG_SWITCH_HTML_CONTENT = `<select 
+  [value]="store.i18nSeleccionado()?.id" 
+  (change)="onLangChange($event)"
+  class="lang-select"
+>
+  @for (lang of store.entities(); track lang.id) {
+    <option [value]="lang.id">{{ lang.name }}</option>
+  }
+</select>
+`;
+
+const LANG_SWITCH_CSS_CONTENT = `.lang-select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+}
+`;
+
+const LANG_SWITCH_SPEC_CONTENT = `import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LangSwitchComponent } from './lang-switch.component';
+import { provideTransloco } from '@barcidev/typed-transloco';
+
+describe('LangSwitchComponent', () => {
+  let component: LangSwitchComponent;
+  let fixture: ComponentFixture<LangSwitchComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LangSwitchComponent],
+      providers: [
+        provideTransloco({
+          config: {
+            availableLangs: ['en-US', 'es-CO'],
+            defaultLang: 'es-CO',
+          },
+          loader: {} as any
+        })
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(LangSwitchComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+`;
+
 const LANG_SWITCH_COMPONENT_CONTENT = (storeImportPath: string) => `import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslocoService } from '@jsverse/transloco';
@@ -87,30 +140,21 @@ import { I18nStore } from '${storeImportPath}';
   selector: 'app-lang-switch',
   standalone: true,
   imports: [CommonModule],
-  template: \`
-    <div class="flex gap-4 p-2">
-      @for (lang of store.entities(); track lang.id) {
-        <button
-          class="px-3 py-1 rounded transition-colors border border-transparent"
-          [class.bg-blue-600]="store.i18nSeleccionado()?.code === lang.code"
-          [class.text-white]="store.i18nSeleccionado()?.code === lang.code"
-          [class.bg-gray-100]="store.i18nSeleccionado()?.code !== lang.code"
-          [class.hover:bg-gray-200]="store.i18nSeleccionado()?.code !== lang.code"
-          (click)="changeLang(lang)"
-        >
-          {{ lang.name }}
-        </button>
-      }
-    </div>
-  \`,
+  templateUrl: './lang-switch.component.html',
+  styleUrl: './lang-switch.component.css'
 })
 export class LangSwitchComponent {
   readonly store = inject(I18nStore);
   private readonly translocoService = inject(TranslocoService);
 
-  changeLang(lang: any) {
-    this.translocoService.setActiveLang(lang.code);
-    this.store.selectI18n(lang.id);
+  onLangChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const id = Number(select.value);
+    const lang = this.store.entities().find(e => e.id === id);
+    if (lang) {
+      this.translocoService.setActiveLang(lang.code);
+      this.store.selectI18n(lang.id);
+    }
   }
 }
 `;
@@ -251,6 +295,9 @@ declare module '@barcidev/typed-transloco' {
     }
     
     fs.writeFileSync(switchCompPath, LANG_SWITCH_COMPONENT_CONTENT(relStorePath), 'utf8');
+    fs.writeFileSync(path.join(sharedCompDir, 'lang-switch.component.html'), LANG_SWITCH_HTML_CONTENT, 'utf8');
+    fs.writeFileSync(path.join(sharedCompDir, 'lang-switch.component.css'), LANG_SWITCH_CSS_CONTENT, 'utf8');
+    fs.writeFileSync(path.join(sharedCompDir, 'lang-switch.component.spec.ts'), LANG_SWITCH_SPEC_CONTENT, 'utf8');
   }
 
   let content = fs.readFileSync(appI18nPath, 'utf8');
