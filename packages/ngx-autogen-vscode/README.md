@@ -24,7 +24,7 @@ Tired of manual boilerplate? **Ngx Autogen** automates the generation of:
 
 ## 📸 Demo
 
-![Ngx Autogen Demo](./screenshot.png)
+![Ngx Autogen Demo](https://raw.githubusercontent.com/jpalacio09/ngx-autogen/main/packages/ngx-autogen-vscode/screenshot.png)
 
 ---
 
