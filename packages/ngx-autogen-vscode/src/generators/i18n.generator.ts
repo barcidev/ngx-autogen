@@ -78,7 +78,7 @@ export function provideI18nStore() {
 }
 `;
 
-const LANG_SWITCH_HTML_CONTENT = `<select 
+const LANG_SELECTOR_HTML_CONTENT = `<select 
   [value]="store.i18nSeleccionado()?.id" 
   (change)="onLangChange($event)"
   class="lang-select"
@@ -89,7 +89,7 @@ const LANG_SWITCH_HTML_CONTENT = `<select
 </select>
 `;
 
-const LANG_SWITCH_CSS_CONTENT = `.lang-select {
+const LANG_SELECTOR_CSS_CONTENT = `.lang-select {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;
@@ -98,17 +98,17 @@ const LANG_SWITCH_CSS_CONTENT = `.lang-select {
 }
 `;
 
-const LANG_SWITCH_SPEC_CONTENT = `import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { LangSwitchComponent } from './lang-switch.component';
+const LANG_SELECTOR_SPEC_CONTENT = `import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LangSelectorComponent } from './lang-selector.component';
 import { provideTransloco } from '@barcidev/typed-transloco';
 
-describe('LangSwitchComponent', () => {
-  let component: LangSwitchComponent;
-  let fixture: ComponentFixture<LangSwitchComponent>;
+describe('LangSelectorComponent', () => {
+  let component: LangSelectorComponent;
+  let fixture: ComponentFixture<LangSelectorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LangSwitchComponent],
+      imports: [LangSelectorComponent],
       providers: [
         provideTransloco({
           config: {
@@ -120,7 +120,7 @@ describe('LangSwitchComponent', () => {
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(LangSwitchComponent);
+    fixture = TestBed.createComponent(LangSelectorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -131,19 +131,19 @@ describe('LangSwitchComponent', () => {
 });
 `;
 
-const LANG_SWITCH_COMPONENT_CONTENT = (storeImportPath: string) => `import { Component, inject } from '@angular/core';
+const LANG_SELECTOR_COMPONENT_CONTENT = (storeImportPath: string) => `import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslocoService } from '@jsverse/transloco';
 import { I18nStore } from '${storeImportPath}';
 
 @Component({
-  selector: 'app-lang-switch',
+  selector: 'app-lang-selector',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './lang-switch.component.html',
-  styleUrl: './lang-switch.component.css'
+  templateUrl: './lang-selector.component.html',
+  styleUrl: './lang-selector.component.css'
 })
-export class LangSwitchComponent {
+export class LangSelectorComponent {
   readonly store = inject(I18nStore);
   private readonly translocoService = inject(TranslocoService);
 
@@ -283,10 +283,10 @@ declare module '@barcidev/typed-transloco' {
     const storePath = path.join(i18nDir, 'i18n.store.ts');
     fs.writeFileSync(storePath, I18N_STORE_CONTENT, 'utf8');
 
-    // Create LangSwitchComponent
-    const sharedCompDir = path.join(workspaceFolder, 'src', 'app', 'shared', 'components');
+    // Create LangSelectorComponent folder
+    const sharedCompDir = path.join(workspaceFolder, 'src', 'app', 'shared', 'components', 'lang-selector');
     fs.mkdirSync(sharedCompDir, { recursive: true });
-    const switchCompPath = path.join(sharedCompDir, 'lang-switch.component.ts');
+    const selectorCompPath = path.join(sharedCompDir, 'lang-selector.component.ts');
     
     // Calculate relative path to store
     let relStorePath = path.relative(sharedCompDir, storePath).replace(/\\/g, '/').replace(/\.ts$/, '');
@@ -294,10 +294,10 @@ declare module '@barcidev/typed-transloco' {
       relStorePath = './' + relStorePath;
     }
     
-    fs.writeFileSync(switchCompPath, LANG_SWITCH_COMPONENT_CONTENT(relStorePath), 'utf8');
-    fs.writeFileSync(path.join(sharedCompDir, 'lang-switch.component.html'), LANG_SWITCH_HTML_CONTENT, 'utf8');
-    fs.writeFileSync(path.join(sharedCompDir, 'lang-switch.component.css'), LANG_SWITCH_CSS_CONTENT, 'utf8');
-    fs.writeFileSync(path.join(sharedCompDir, 'lang-switch.component.spec.ts'), LANG_SWITCH_SPEC_CONTENT, 'utf8');
+    fs.writeFileSync(selectorCompPath, LANG_SELECTOR_COMPONENT_CONTENT(relStorePath), 'utf8');
+    fs.writeFileSync(path.join(sharedCompDir, 'lang-selector.component.html'), LANG_SELECTOR_HTML_CONTENT, 'utf8');
+    fs.writeFileSync(path.join(sharedCompDir, 'lang-selector.component.css'), LANG_SELECTOR_CSS_CONTENT, 'utf8');
+    fs.writeFileSync(path.join(sharedCompDir, 'lang-selector.component.spec.ts'), LANG_SELECTOR_SPEC_CONTENT, 'utf8');
   }
 
   let content = fs.readFileSync(appI18nPath, 'utf8');
