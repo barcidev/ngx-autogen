@@ -60,7 +60,7 @@ async function generateComponentCommand(uri, interactive = false) {
     }
     let shouldGenerateStore = config?.component?.generateStore;
     if (shouldGenerateStore === undefined) {
-        const generateStoreSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+        const generateStoreSelection = await vscode.window.showQuickPick(['Yes', 'No'], {
             placeHolder: 'Generate NgRx Signal Store for this component?'
         });
         if (!generateStoreSelection)
@@ -69,7 +69,7 @@ async function generateComponentCommand(uri, interactive = false) {
     }
     let shouldGenerateI18n = config?.component?.generateI18n;
     if (shouldGenerateI18n === undefined) {
-        const generateI18nSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+        const generateI18nSelection = await vscode.window.showQuickPick(['Yes', 'No'], {
             placeHolder: 'Generate Transloco i18n scope?'
         });
         if (!generateI18nSelection)
@@ -87,12 +87,21 @@ async function generateComponentCommand(uri, interactive = false) {
     }
     let storeOptions;
     if (shouldGenerateStore) {
-        const entityName = config ? name : await vscode.window.showInputBox({
+        const entityName = await vscode.window.showInputBox({
             prompt: 'Entity store name (default = component name):',
             value: name
         });
         if (!entityName)
             return;
+        let useGroupedLayout = config?.store?.useGroupedLayout;
+        if (useGroupedLayout === undefined) {
+            const groupedLayoutSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+                placeHolder: 'Use grouped layout for store? (models/ and services/ subfolders)'
+            });
+            if (!groupedLayoutSelection)
+                return;
+            useGroupedLayout = groupedLayoutSelection === 'Yes';
+        }
         let primaryKey = config?.store?.primaryKey;
         if (!primaryKey) {
             primaryKey = await vscode.window.showInputBox({
@@ -111,7 +120,10 @@ async function generateComponentCommand(uri, interactive = false) {
                 return;
             provideInRoot = provideInRootSelection === 'Yes';
         }
-        let defaultLang = config?.defaultLang;
+        let defaultLang = config?.store?.pluralizationLang;
+        if (!defaultLang && workspaceFolder) {
+            defaultLang = (0, config_utils_1.getDefaultLangFromProject)(workspaceFolder) || undefined;
+        }
         if (!defaultLang) {
             const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
                 placeHolder: 'Default language for pluralization:'
@@ -122,7 +134,7 @@ async function generateComponentCommand(uri, interactive = false) {
         }
         storeOptions = {
             entityName,
-            useGroupedLayout: false,
+            useGroupedLayout,
             primaryKey,
             provideInRoot,
             defaultLang
@@ -130,13 +142,16 @@ async function generateComponentCommand(uri, interactive = false) {
     }
     let i18nOptions;
     if (shouldGenerateI18n) {
-        const scopeName = config ? name : await vscode.window.showInputBox({
+        const scopeName = await vscode.window.showInputBox({
             prompt: 'Scope name:',
             value: name
         });
         if (!scopeName)
             return;
-        let defaultLang = config?.defaultLang;
+        let defaultLang;
+        if (workspaceFolder) {
+            defaultLang = (0, config_utils_1.getDefaultLangFromProject)(workspaceFolder) || undefined;
+        }
         if (!defaultLang) {
             const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
                 placeHolder: 'Default language:'
@@ -160,20 +175,21 @@ async function generateComponentCommand(uri, interactive = false) {
         i18nOptions
     };
     await (0, component_generator_1.generateComponent)(uri.fsPath, options);
-    if (workspaceFolder && !config && !interactive) {
+    if (workspaceFolder) {
         await (0, config_utils_1.promptToSaveConfig)(workspaceFolder, {
             styleExt,
             skipTests,
-            defaultLang: storeOptions?.defaultLang || i18nOptions?.defaultLang,
             component: {
                 generateStore: shouldGenerateStore,
                 generateI18n: shouldGenerateI18n
             },
             store: shouldGenerateStore ? {
                 primaryKey: storeOptions?.primaryKey,
-                provideInRoot: storeOptions?.provideInRoot
+                provideInRoot: storeOptions?.provideInRoot,
+                useGroupedLayout: storeOptions?.useGroupedLayout,
+                pluralizationLang: storeOptions?.defaultLang
             } : undefined
-        });
+        }, interactive);
     }
 }
 //# sourceMappingURL=generate-component.js.map

@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { appendToBarrel, ensureDir, writeFileIfNotExists } from '../utils/file.utils';
 import { promptToInstallLibraries } from '../utils/install.utils';
@@ -321,6 +322,58 @@ export function provide${nameClass}Store() {
   appendToBarrel(barrelPath, `export * from '${modelExport}';`);
   appendToBarrel(barrelPath, `export * from '${serviceExport}';`);
   appendToBarrel(barrelPath, `export * from '${storeExport}';`);
+
+  // Attempt to update component if exists
+  const files = fs.readdirSync(targetPath);
+  const componentFile = files.find((f: string) => f.endsWith('.component.ts'));
+  if (componentFile) {
+    const compPath = path.join(targetPath, componentFile);
+    let compContent = fs.readFileSync(compPath, 'utf8');
+    
+    const storeClassName = `${nameClass}Store`;
+    if (!compContent.includes(storeClassName)) {
+      compContent = `import { ${storeClassName}${!isProvideInRoot ? `, provide${storeClassName}` : ''} } from './state/${nameDash}/${nameDash}.store';\n` + compContent;
+      
+      if (!isProvideInRoot) {
+        if (compContent.includes('providers: [')) {
+          compContent = compContent.replace(/providers:\s*\[/, `providers: [\n    ...provide${storeClassName}(),`);
+        } else {
+          compContent = compContent.replace(/imports:\s*\[(.*?)\]/s, `imports: [$1],\n  providers: [...provide${storeClassName}()]`);
+        }
+      }
+      
+      const classPropertyStr = `  private readonly _${nameCamel}Store = inject(${storeClassName});\n  readonly data$ = this._${nameCamel}Store.entities;\n\n`;
+      compContent = compContent.replace(/export class .*? \{/, `$& \n${classPropertyStr}`);
+      
+      if (!compContent.includes('inject } from \'@angular/core\'') && !compContent.includes('inject,')) {
+         compContent = compContent.replace(/import\s+\{([^}]*)\}\s+from\s+['"]@angular\/core['"]/, `import { $1, inject } from '@angular/core'`);
+      }
+      
+      if (!compContent.includes('JsonPipe')) {
+         if (compContent.includes('@angular/common')) {
+           compContent = compContent.replace(/import\s+\{([^}]*)\}\s+from\s+['"]@angular\/common['"]/, `import { $1, JsonPipe } from '@angular/common'`);
+         } else {
+           compContent = `import { JsonPipe } from '@angular/common';\n` + compContent;
+         }
+         if (compContent.includes('imports: [')) {
+           compContent = compContent.replace(/imports:\s*\[/, `imports: [JsonPipe, `);
+         }
+      }
+
+      fs.writeFileSync(compPath, compContent, 'utf8');
+    }
+  }
+
+  const htmlFile = files.find((f: string) => f.endsWith('.component.html'));
+  if (htmlFile) {
+    const htmlPath = path.join(targetPath, htmlFile);
+    let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+    
+    if (!htmlContent.includes(`data$()`)) {
+      htmlContent = htmlContent + `\n<pre>{{ data$() | json }}</pre>\n`;
+      fs.writeFileSync(htmlPath, htmlContent, 'utf8');
+    }
+  }
 
   if (!options.skipInstallPrompt) {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(targetPath))?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;

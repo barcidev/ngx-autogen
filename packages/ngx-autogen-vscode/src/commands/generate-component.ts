@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { generateComponent, ComponentOptions } from '../generators/component.generator';
-import { StoreOptions } from '../generators/store.generator';
+import { ComponentOptions, generateComponent } from '../generators/component.generator';
 import { I18nOptions } from '../generators/i18n.generator';
-import { getConfig, promptToSaveConfig, getDefaultLangFromProject } from '../utils/config.utils';
+import { StoreOptions } from '../generators/store.generator';
+import { getConfig, getDefaultLangFromProject, promptToSaveConfig } from '../utils/config.utils';
 
 export async function generateComponentCommand(uri: vscode.Uri, interactive: boolean = false) {
   if (!uri || !uri.fsPath) {
@@ -29,7 +29,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
 
   let shouldGenerateStore = config?.component?.generateStore;
   if (shouldGenerateStore === undefined) {
-    const generateStoreSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+    const generateStoreSelection = await vscode.window.showQuickPick(['Yes', 'No'], {
       placeHolder: 'Generate NgRx Signal Store for this component?'
     });
     if (!generateStoreSelection) return;
@@ -38,7 +38,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
 
   let shouldGenerateI18n = config?.component?.generateI18n;
   if (shouldGenerateI18n === undefined) {
-    const generateI18nSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+    const generateI18nSelection = await vscode.window.showQuickPick(['Yes', 'No'], {
       placeHolder: 'Generate Transloco i18n scope?'
     });
     if (!generateI18nSelection) return;
@@ -93,7 +93,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
     if (!defaultLang && workspaceFolder) {
       defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
     }
-    
+
     if (!defaultLang) {
       const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
         placeHolder: 'Default language for pluralization:'
@@ -123,7 +123,7 @@ export async function generateComponentCommand(uri: vscode.Uri, interactive: boo
     if (workspaceFolder) {
       defaultLang = getDefaultLangFromProject(workspaceFolder) || undefined;
     }
-    
+
     if (!defaultLang) {
       const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
         placeHolder: 'Default language:'

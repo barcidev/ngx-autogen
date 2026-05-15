@@ -47,9 +47,9 @@ async function generateComponent(targetPath, options) {
     const selectorName = (0, string_utils_1.toSelectorName)(options.name);
     const compDir = path.join(targetPath, nameDash);
     (0, file_utils_1.ensureDir)(compDir);
-    let imports = `import { Component, OnInit, inject } from '@angular/core';\nimport { CommonModule, JsonPipe } from '@angular/common';\n`;
+    let imports = `import { Component, OnInit${options.generateStore ? ', inject' : ''} } from '@angular/core';\nimport { CommonModule${options.generateStore ? ', JsonPipe' : ''} } from '@angular/common';\n`;
     let providers = ``;
-    let componentImports = `CommonModule, JsonPipe`;
+    let componentImports = `CommonModule${options.generateStore ? ', JsonPipe' : ''}`;
     let classProperties = ``;
     let templateContent = ``;
     if (options.generateStore && options.storeOptions) {

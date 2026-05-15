@@ -58,7 +58,10 @@ async function generateI18nCommand(uri, interactive = false) {
     });
     if (!scopeName)
         return;
-    let defaultLang = config?.defaultLang;
+    let defaultLang;
+    if (workspaceFolder) {
+        defaultLang = (0, config_utils_1.getDefaultLangFromProject)(workspaceFolder) || undefined;
+    }
     if (!defaultLang) {
         const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
             placeHolder: 'Default language:'
@@ -72,10 +75,5 @@ async function generateI18nCommand(uri, interactive = false) {
         defaultLang
     };
     await (0, i18n_generator_1.generateI18n)(uri.fsPath, options);
-    if (workspaceFolder && !config && !interactive) {
-        await (0, config_utils_1.promptToSaveConfig)(workspaceFolder, {
-            defaultLang
-        });
-    }
 }
 //# sourceMappingURL=generate-i18n.js.map

@@ -24,9 +24,9 @@ export async function generateComponent(targetPath: string, options: ComponentOp
   const compDir = path.join(targetPath, nameDash);
   ensureDir(compDir);
 
-  let imports = `import { Component, OnInit, inject } from '@angular/core';\nimport { CommonModule, JsonPipe } from '@angular/common';\n`;
+  let imports = `import { Component, OnInit${options.generateStore ? ', inject' : ''} } from '@angular/core';\nimport { CommonModule${options.generateStore ? ', JsonPipe' : ''} } from '@angular/common';\n`;
   let providers = ``;
-  let componentImports = `CommonModule, JsonPipe`;
+  let componentImports = `CommonModule${options.generateStore ? ', JsonPipe' : ''}`;
   let classProperties = ``;
   let templateContent = ``;
 

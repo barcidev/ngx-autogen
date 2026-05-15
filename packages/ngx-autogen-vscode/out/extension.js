@@ -36,6 +36,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const generate_store_1 = require("./commands/generate-store");
 const generate_i18n_1 = require("./commands/generate-i18n");
 const generate_component_1 = require("./commands/generate-component");
@@ -44,9 +46,27 @@ function activate(context) {
     const i18nDisposable = vscode.commands.registerCommand('ngx-autogen.generateI18n', (uri) => (0, generate_i18n_1.generateI18nCommand)(uri, false));
     const componentDisposable = vscode.commands.registerCommand('ngx-autogen.generateComponent', (uri) => (0, generate_component_1.generateComponentCommand)(uri, false));
     const storeInteractiveDisposable = vscode.commands.registerCommand('ngx-autogen.generateStoreInteractive', (uri) => (0, generate_store_1.generateStoreCommand)(uri, true));
-    const i18nInteractiveDisposable = vscode.commands.registerCommand('ngx-autogen.generateI18nInteractive', (uri) => (0, generate_i18n_1.generateI18nCommand)(uri, true));
     const componentInteractiveDisposable = vscode.commands.registerCommand('ngx-autogen.generateComponentInteractive', (uri) => (0, generate_component_1.generateComponentCommand)(uri, true));
-    context.subscriptions.push(storeDisposable, i18nDisposable, componentDisposable, storeInteractiveDisposable, i18nInteractiveDisposable, componentInteractiveDisposable);
+    context.subscriptions.push(storeDisposable, i18nDisposable, componentDisposable, storeInteractiveDisposable, componentInteractiveDisposable);
+    const updateConfigContext = () => {
+        let hasConfig = false;
+        const folders = vscode.workspace.workspaceFolders;
+        if (folders) {
+            for (const folder of folders) {
+                if (fs.existsSync(path.join(folder.uri.fsPath, '.autogen', 'config.json'))) {
+                    hasConfig = true;
+                    break;
+                }
+            }
+        }
+        vscode.commands.executeCommand('setContext', 'ngx-autogen:hasConfig', hasConfig);
+    };
+    updateConfigContext();
+    const watcher = vscode.workspace.createFileSystemWatcher('**/.autogen/config.json');
+    watcher.onDidCreate(updateConfigContext);
+    watcher.onDidChange(updateConfigContext);
+    watcher.onDidDelete(updateConfigContext);
+    context.subscriptions.push(watcher);
 }
 function deactivate() { }
 //# sourceMappingURL=extension.js.map

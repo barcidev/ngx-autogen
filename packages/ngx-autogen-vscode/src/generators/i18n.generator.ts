@@ -56,6 +56,18 @@ export const ${nameCamel}I18n = TranslocoUtils.createScopeConfig('${nameCamel}',
     }
   }
 
+  const htmlFile = files.find(f => f.endsWith('.component.html'));
+  if (htmlFile) {
+    const htmlPath = path.join(targetPath, htmlFile);
+    let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+    const i18nVar = camelize(options.scopeName);
+    
+    if (!htmlContent.includes(`prefix: '${i18nVar}'`)) {
+      htmlContent = `<div *typedTransloco="let t; prefix: '${i18nVar}'">\n  <h1>{{ t('title') }}</h1>\n</div>\n` + htmlContent;
+      fs.writeFileSync(htmlPath, htmlContent, 'utf8');
+    }
+  }
+
   if (!options.skipInstallPrompt) {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(targetPath))?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (workspaceFolder) {

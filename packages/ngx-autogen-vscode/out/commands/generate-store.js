@@ -50,12 +50,15 @@ async function generateStoreCommand(uri, interactive = false) {
     });
     if (!entityName)
         return;
-    const groupedLayoutSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
-        placeHolder: 'Use grouped layout? (models/ and services/ subfolders)'
-    });
-    if (!groupedLayoutSelection)
-        return;
-    const useGroupedLayout = groupedLayoutSelection === 'Yes';
+    let useGroupedLayout = config?.store?.useGroupedLayout;
+    if (useGroupedLayout === undefined) {
+        const groupedLayoutSelection = await vscode.window.showQuickPick(['No', 'Yes'], {
+            placeHolder: 'Use grouped layout? (models/ and services/ subfolders)'
+        });
+        if (!groupedLayoutSelection)
+            return;
+        useGroupedLayout = groupedLayoutSelection === 'Yes';
+    }
     let primaryKey = config?.store?.primaryKey;
     if (!primaryKey) {
         primaryKey = await vscode.window.showInputBox({
@@ -74,7 +77,10 @@ async function generateStoreCommand(uri, interactive = false) {
             return;
         provideInRoot = provideInRootSelection === 'Yes';
     }
-    let defaultLang = config?.defaultLang;
+    let defaultLang = config?.store?.pluralizationLang;
+    if (!defaultLang && workspaceFolder) {
+        defaultLang = (0, config_utils_1.getDefaultLangFromProject)(workspaceFolder) || undefined;
+    }
     if (!defaultLang) {
         const defaultLangSelection = await vscode.window.showQuickPick(['en', 'es'], {
             placeHolder: 'Default language for pluralization:'
@@ -91,14 +97,15 @@ async function generateStoreCommand(uri, interactive = false) {
         defaultLang
     };
     await (0, store_generator_1.generateStore)(uri.fsPath, options);
-    if (workspaceFolder && !config && !interactive) {
+    if (workspaceFolder) {
         await (0, config_utils_1.promptToSaveConfig)(workspaceFolder, {
-            defaultLang,
             store: {
                 primaryKey,
-                provideInRoot
+                provideInRoot,
+                useGroupedLayout,
+                pluralizationLang: defaultLang
             }
-        });
+        }, interactive);
     }
 }
 //# sourceMappingURL=generate-store.js.map
