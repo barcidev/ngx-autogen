@@ -17,6 +17,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "ngx-autogen.generateComponent",
+        "title": "ngx-autogen: Generate Component"
+      },
+      {
         "command": "ngx-autogen.generateStore",
         "title": "ngx-autogen: Generate Store"
       },
@@ -25,16 +29,12 @@
         "title": "ngx-autogen: Generate i18n Scope"
       },
       {
-        "command": "ngx-autogen.generateComponent",
-        "title": "ngx-autogen: Generate Component"
+        "command": "ngx-autogen.generateComponentInteractive",
+        "title": "ngx-autogen: Generate Custom Component"
       },
       {
         "command": "ngx-autogen.generateStoreInteractive",
         "title": "ngx-autogen: Generate Custom Store"
-      },
-      {
-        "command": "ngx-autogen.generateComponentInteractive",
-        "title": "ngx-autogen: Generate Custom Component"
       }
     ],
     "menus": {
@@ -47,25 +47,25 @@
       ],
       "ngx-autogen.submenu": [
         {
-          "command": "ngx-autogen.generateStore",
+          "command": "ngx-autogen.generateComponent",
           "group": "1_generate@1"
         },
         {
-          "command": "ngx-autogen.generateI18n",
+          "command": "ngx-autogen.generateStore",
           "group": "1_generate@2"
         },
         {
-          "command": "ngx-autogen.generateComponent",
+          "command": "ngx-autogen.generateI18n",
           "group": "1_generate@3"
         },
         {
-          "command": "ngx-autogen.generateStoreInteractive",
+          "command": "ngx-autogen.generateComponentInteractive",
           "group": "2_interactive@1",
           "when": "ngx-autogen:hasConfig"
         },
         {
-          "command": "ngx-autogen.generateComponentInteractive",
-          "group": "2_interactive@3",
+          "command": "ngx-autogen.generateStoreInteractive",
+          "group": "2_interactive@2",
           "when": "ngx-autogen:hasConfig"
         }
       ]
