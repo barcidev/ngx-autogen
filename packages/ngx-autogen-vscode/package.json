@@ -1,5 +1,5 @@
 {
-  "name": "ngx-autogen-vscode",
+  "name": "ngx-autogen",
   "displayName": "Ngx Autogen",
   "description": "Generate NgRx Signal Store, Transloco i18n scopes and Angular components from the context menu",
   "publisher": "barcidev",
